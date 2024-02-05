@@ -3,7 +3,7 @@ box::use(
 )
 
 box::use(
-  utils/dynamodb_utils[
+  .. / dynamo / dynamodb_utils[
     get_processed_table_data,
     get_table_schema,
     put_table_row,
@@ -11,15 +11,47 @@ box::use(
   ]
 )
 
+#' Function to help with API Authentication
+#' @param res the response object from Plumber
+#' @param req the request object from Plumber
+#' @param FUN the function call if authentication succeeds
+#' @param ... params to pass to the function handler
+auth_helper <- function(
+    res,
+    req,
+    FUN,
+    ...
+) {
+  req_has_key = "HTTP_X_API_KEY" %in% names(req)
+  key_is_valid = req$HTTP_X_API_KEY == Sys.getenv("API_KEY")
+  environment_not_set = length(Sys.getenv("API_KEY")) <= 1
+  if (!req_has_key || !key_is_valid ||environment_not_set) {
+    res$body <- "Unauthorized"
+    res$status <- 401
+    return("Missing or invalid API key, or invalid configuration!")
+  } else {
+    FUN(...)
+  }
+}
+
+#* @apiTitle DynamoDb
+#* @apiDescription API for CRUD operations
+
 #* Schema
 #* @param table_name:chr The table name to fetch the schema for.
 #* @get /schema
 function(
-  table_name
-) {
-  get_table_schema(
+    res,
+    req,
     table_name
+) {
+  auth_helper(
+    res,
+    req,
+    get_table_schema,
+    table_name = table_name
   )
+
 }
 
 #* New row
@@ -28,31 +60,38 @@ function(
 #* @param show_old:logical Show the last values of the row?
 #* @put /create
 function(
-  table_name,
-  input_list,
-  show_old
-) {
-  put_table_row(
+    res,
+    req,
     table_name,
-    as.list(input_list),
-    as.logical(show_old)
+    input_list,
+    show_old
+) {
+  auth_helper(
+    res,
+    req,
+    put_table_row,
+    table_name = table_name,
+    input_list = as.list(input_list),
+    show_old = as.logical(show_old)
   )
 }
-
-#* @apiTitle DynamoDb
-#* @apiDescription API for CRUD operations
 
 #* Table
 #* @param table_name:chr The table name to fetch data from.
 #* @param limit:numeric The number of rows to limit at. Use 0 for all rows.
 #* @get /read
 function(
-  table_name,
-  limit
-) {
-  get_processed_table_data(
+    res,
+    req,
     table_name,
-    as.numeric(limit)
+    limit
+) {
+  auth_helper(
+    res,
+    req,
+    get_processed_table_data,
+    table_name = table_name,
+    limit = as.numeric(limit)
   )
 }
 
@@ -62,14 +101,19 @@ function(
 #* @param show_old:logical Show the last values of the row?
 #* @put /update
 function(
-  table_name,
-  input_list,
-  show_old
-) {
-  put_table_row(
+    res,
+    req,
     table_name,
-    as.list(input_list),
-    as.logical(show_old),
+    input_list,
+    show_old
+) {
+  auth_helper(
+    res,
+    req,
+    put_table_row,
+    table_name = table_name,
+    input_list = as.list(input_list),
+    show_old = as.logical(show_old),
     is_update = TRUE
   )
 }
@@ -80,13 +124,18 @@ function(
 #* @param show_old:logical Show the last values of the row?
 #* @delete /delete
 function(
-  table_name,
-  row_key,
-  show_old
-) {
-  delete_table_row(
+    res,
+    req,
     table_name,
-    as.numeric(row_key),
+    row_key,
+    show_old
+) {
+  auth_helper(
+    res,
+    req,
+    delete_table_row,
+    table_name = table_name,
+    row_key = as.numeric(row_key),
     show_old = as.logical(show_old)
   )
 }
