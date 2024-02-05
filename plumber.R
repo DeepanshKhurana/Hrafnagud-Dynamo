@@ -34,12 +34,17 @@ auth_helper <- function(
   }
 }
 
-#* @apiTitle DynamoDb
-#* @apiDescription API for CRUD operations
+#* @apiTitle Hrafnagud
+#* @apiDescription An all-seeing API for personal use
+#* @apiTag CRUD DynamoDb Utility Endpoints
+#* @apiTag Livingston Trip-related Endpoints
+#* @apiTag Ebenezer Finance-related Endpoints
+#* @apiTag Fogg Task-related Endpoints
 
 #* Schema
 #* @param table_name:chr The table name to fetch the schema for.
 #* @get /schema
+#* @tag CRUD
 function(
     res,
     req,
@@ -59,6 +64,7 @@ function(
 #* @param input_list:[chr] The list of values to add in the row.
 #* @param show_old:logical Show the last values of the row?
 #* @put /create
+#* @tag CRUD
 function(
     res,
     req,
@@ -80,6 +86,7 @@ function(
 #* @param table_name:chr The table name to fetch data from.
 #* @param limit:numeric The number of rows to limit at. Use 0 for all rows.
 #* @get /read
+#* @tag CRUD
 function(
     res,
     req,
@@ -100,6 +107,7 @@ function(
 #* @param input_list:[chr] The list of values to add in the row.
 #* @param show_old:logical Show the last values of the row?
 #* @put /update
+#* @tag CRUD
 function(
     res,
     req,
@@ -123,6 +131,7 @@ function(
 #* @param row_key:numeric The index of the row to delete.
 #* @param show_old:logical Show the last values of the row?
 #* @delete /delete
+#* @tag CRUD
 function(
     res,
     req,
