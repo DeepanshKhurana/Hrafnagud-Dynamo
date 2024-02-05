@@ -40,7 +40,7 @@ add_auth <- function(
 
 }
 
-pr("plumber.R") |>
+pr(here("Hrafnagud-Dynamo", "plumber.R")) |>
   pr_set_api_spec(add_auth) |>
   pr_run(
     port = 8008,
