@@ -3,7 +3,7 @@ box::use(
 )
 
 box::use(
-  `Hrafnagud-Dynamo`/utils/dynamodb_utils[
+  utils/dynamodb_utils[
     get_processed_table_data,
     get_table_schema,
     put_table_row,
@@ -146,5 +146,20 @@ function(
     table_name = table_name,
     row_key = as.numeric(row_key),
     show_old = as.logical(show_old)
+  )
+}
+
+#* Trips
+#* @get /livingston/trips
+#* @tag Livingston
+function(
+    res,
+    req
+) {
+  auth_helper(
+    res,
+    req,
+    get_processed_table_data,
+    table_name = "livingston_trips"
   )
 }

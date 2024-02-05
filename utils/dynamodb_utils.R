@@ -92,7 +92,12 @@ process_table_scan <- function(
   null_list = c("NULL", "")
 ) {
   assert_list(scan_data)
-  items <- sapply(scan_data$Items, unlist) |>
+  items <- lapply(scan_data$Items, unlist)
+  items <- lapply(
+    items, function(x) {
+      x[sort(names(x))]
+    }
+  ) |>
     data.frame() |>
     t() |>
     data.frame()
@@ -322,12 +327,17 @@ process_table_input_row <- function(
             key_value <- input_list[[
               which(names(data_contract) == column_name)
             ]]
-          } else if (!is_update) {
+          }
+
+          if (!is_update) {
+            adjusted_contract <- data_contract[names(data_contract) != "id"]
             if (column_name == "id") {
-              key_value <- get_latest_key(table_name, conn = conn) + 1
+              key_value <- as.numeric(
+                get_latest_key(table_name, conn = conn) + 1
+              )
             } else {
               key_value <- input_list[[
-                which(names(data_contract) == column_name) - 1
+                which(names(adjusted_contract) == column_name)
               ]]
             }
           }
