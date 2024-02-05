@@ -24,7 +24,7 @@ auth_helper <- function(
 ) {
   req_has_key = "HTTP_X_API_KEY" %in% names(req)
   key_is_valid = req$HTTP_X_API_KEY == Sys.getenv("API_KEY")
-  environment_not_set = length(Sys.getenv("API_KEY")) <= 1
+  environment_not_set = nchar(Sys.getenv("API_KEY")) <= 1
   if (!req_has_key || !key_is_valid ||environment_not_set) {
     res$body <- "Unauthorized"
     res$status <- 401
