@@ -29,7 +29,7 @@ box::use(
 #  utils/sheets_utils[
     load_sheet
   ],
-  `Hrafnagud-Dynamo`/utils/sheets_utils[
+  `Hrafnagud-Dynamo`/utils/gold_utils[
 #  utils/gold_utils[
     get_mmtc_price,
     get_bullions_price
