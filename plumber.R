@@ -315,3 +315,94 @@ function(
   )
 }
 
+## Ebenezer ----
+
+#* Stocks
+#* @get /ebenezer/stocks
+#* @tag Ebenezer
+function(
+  res,
+  req
+) {
+  auth_helper(
+    res,
+    req,
+    get_processed_table_data,
+    table_name = "ebenezer_stocks"
+  )
+}
+
+#* Funds
+#* @get /ebenezer/funds
+#* @tag Ebenezer
+function(
+  res,
+  req
+) {
+  auth_helper(
+    res,
+    req,
+    get_processed_table_data,
+    table_name = "ebenezer_funds"
+  )
+}
+
+#* Deposits
+#* @get /ebenezer/deposits
+#* @tag Ebenezer
+function(
+  res,
+  req
+) {
+  auth_helper(
+    res,
+    req,
+    get_processed_table_data,
+    table_name = "ebenezer_deposits"
+  )
+}
+
+#* Savings
+#* @get /ebenezer/savings
+#* @tag Ebenezer
+function(
+  res,
+  req
+) {
+  auth_helper(
+    res,
+    req,
+    get_processed_table_data,
+    table_name = "ebenezer_savings"
+  )
+}
+
+#* MMTC
+#* @get /ebenezer/mmtc
+#* @tag Ebenezer
+function(
+  res,
+  req
+) {
+  auth_helper(
+    res,
+    req,
+    get_processed_table_data,
+    table_name = "ebenezer_mmtc"
+  )
+}
+
+#* SGBs
+#* @get /ebenezer/sgbs
+#* @tag Ebenezer
+function(
+    res,
+    req
+) {
+  auth_helper(
+    res,
+    req,
+    get_processed_table_data,
+    table_name = "ebenezer_sgbs"
+  )
+}
