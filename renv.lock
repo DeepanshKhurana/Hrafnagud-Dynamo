@@ -8,7 +8,7 @@
       },
       {
         "Name": "INDIA",
-        "URL": "https://cran.icts.res.in/"
+        "URL": "https://cran.icts.res.in"
       }
     ]
   },
@@ -186,6 +186,16 @@
         "R"
       ],
       "Hash": "c089a619a7fae175d149d89164f8c7d8"
+    },
+    "cpp11": {
+      "Package": "cpp11",
+      "Version": "0.4.7",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R"
+      ],
+      "Hash": "5a295d7d963cc5035284dcdbaf334f4e"
     },
     "crayon": {
       "Package": "crayon",
@@ -562,6 +572,19 @@
       ],
       "Hash": "93e9379f4be8c0bf1862dfc7f720193e"
     },
+    "lubridate": {
+      "Package": "lubridate",
+      "Version": "1.9.3",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "generics",
+        "methods",
+        "timechange"
+      ],
+      "Hash": "680ad542fbcf801442c83a6ac5a2126c"
+    },
     "magrittr": {
       "Package": "magrittr",
       "Version": "2.0.3",
@@ -596,7 +619,7 @@
       "Package": "paws",
       "Version": "0.5.0",
       "Source": "Repository",
-      "Repository": "INDIA",
+      "Repository": "CRAN",
       "Requirements": [
         "paws.analytics",
         "paws.application.integration",
@@ -619,7 +642,7 @@
       "Package": "paws.analytics",
       "Version": "0.5.0",
       "Source": "Repository",
-      "Repository": "INDIA",
+      "Repository": "CRAN",
       "Requirements": [
         "paws.common"
       ],
@@ -1039,6 +1062,17 @@
         "withr"
       ],
       "Hash": "79540e5fcd9e0435af547d885f184fd5"
+    },
+    "timechange": {
+      "Package": "timechange",
+      "Version": "0.3.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "cpp11"
+      ],
+      "Hash": "c5f3c201b931cd6474d17d8700ccb1c8"
     },
     "utf8": {
       "Package": "utf8",

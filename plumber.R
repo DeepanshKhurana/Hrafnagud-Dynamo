@@ -1,9 +1,25 @@
 box::use(
-  plumber[...]
+  plumber[...],
+  dplyr[
+    mutate,
+    case_when,
+    summarise,
+    group_by,
+    n
+  ],
+  lubridate[
+    dmy,
+    month,
+    year
+  ],
+  tidyr[
+    complete
+  ]
 )
 
 box::use(
-  `Hrafnagud-Dynamo`/utils/dynamodb_utils[
+  #  `Hrafnagud-Dynamo`/utils/dynamodb_utils[
+  utils/dynamodb_utils[
     get_processed_table_data,
     get_table_schema,
     put_table_row,
@@ -17,20 +33,20 @@ box::use(
 #' @param FUN the function call if authentication succeeds
 #' @param ... params to pass to the function handler
 auth_helper <- function(
-    res,
-    req,
-    FUN,
-    ...
+  res,
+  req,
+  FUN, #nolint: object_name_linter
+  ...
 ) {
-  req_has_key = "HTTP_X_API_KEY" %in% names(req)
-  key_is_valid = req$HTTP_X_API_KEY == Sys.getenv("API_KEY")
-  environment_not_set = nchar(Sys.getenv("API_KEY")) <= 1
-  if (!req_has_key || !key_is_valid ||environment_not_set) {
+  req_has_key <- "HTTP_X_API_KEY" %in% names(req)
+  key_is_valid <- req$HTTP_X_API_KEY == Sys.getenv("API_KEY")
+  environment_not_set <- nchar(Sys.getenv("API_KEY")) <= 1
+  if (!req_has_key || !key_is_valid || environment_not_set) {
     res$body <- "Unauthorized"
     res$status <- 401
     return("Missing or invalid API key, or invalid configuration!")
   } else {
-    FUN(...)
+    FUN(...) #nolint: object_name_linter
   }
 }
 
@@ -46,9 +62,9 @@ auth_helper <- function(
 #* @get /schema
 #* @tag CRUD
 function(
-    res,
-    req,
-    table_name
+  res,
+  req,
+  table_name
 ) {
   auth_helper(
     res,
@@ -66,11 +82,11 @@ function(
 #* @put /create
 #* @tag CRUD
 function(
-    res,
-    req,
-    table_name,
-    input_list,
-    show_old
+  res,
+  req,
+  table_name,
+  input_list,
+  show_old
 ) {
   auth_helper(
     res,
@@ -88,10 +104,10 @@ function(
 #* @get /read
 #* @tag CRUD
 function(
-    res,
-    req,
-    table_name,
-    limit
+  res,
+  req,
+  table_name,
+  limit
 ) {
   auth_helper(
     res,
@@ -109,11 +125,11 @@ function(
 #* @put /update
 #* @tag CRUD
 function(
-    res,
-    req,
-    table_name,
-    input_list,
-    show_old
+  res,
+  req,
+  table_name,
+  input_list,
+  show_old
 ) {
   auth_helper(
     res,
@@ -133,11 +149,11 @@ function(
 #* @delete /delete
 #* @tag CRUD
 function(
-    res,
-    req,
-    table_name,
-    row_key,
-    show_old
+  res,
+  req,
+  table_name,
+  row_key,
+  show_old
 ) {
   auth_helper(
     res,
@@ -153,8 +169,8 @@ function(
 #* @get /livingston/trips
 #* @tag Livingston
 function(
-    res,
-    req
+  res,
+  req
 ) {
   auth_helper(
     res,
@@ -162,4 +178,58 @@ function(
     get_processed_table_data,
     table_name = "livingston_trips"
   )
+}
+
+#* Details
+#* @get /livingston/details
+#* @param trip_id:numeric The id of the trip to fetch details for
+#* @tag Livingston
+function(
+  res,
+  req,
+  trip_id
+) {
+
+  # TODO Make functions here to wrap inside the third param
+  data <- auth_helper(
+    res,
+    req,
+    get_processed_table_data,
+    table_name = "livingston_details"
+  )
+  data[
+    as.numeric(data$trip_id) == as.numeric(trip_id),
+  ]
+}
+
+#* Counts
+#* @get /livingston/counts
+#* @tag Livingston
+function(
+  res,
+  req
+) {
+  data <- auth_helper(
+    res,
+    req,
+    get_processed_table_data,
+    table_name = "livingston_trips"
+  )
+
+  current <- Sys.Date()
+
+  data |>
+    mutate(start = dmy(start_date),
+           end = dmy(end_date)) |>
+    mutate(trip_status = case_when(
+      end < current ~ "Past",
+      start <= current & end >= current ~ "Ongoing",
+      start > current ~ "Upcoming"
+    )) |>
+    group_by(trip_status) |>
+    summarise(trip_count = n()) |>
+    complete(
+      trip_status = c("Past", "Ongoing", "Upcoming"),
+      fill = list(trip_count = 0)
+    )
 }

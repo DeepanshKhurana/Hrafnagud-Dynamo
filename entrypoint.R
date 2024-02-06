@@ -10,8 +10,8 @@ box::use(
 )
 
 add_auth <- function(
-    api,
-    paths = NULL
+  api,
+  paths = NULL
 ) {
 
   api[["components"]] <- list(
@@ -40,9 +40,10 @@ add_auth <- function(
 
 }
 
-pr(here("Hrafnagud-Dynamo", "plumber.R")) |>
+# pr(here("Hrafnagud-Dynamo", "plumber.R")) |>
+pr("plumber.R") |>
   pr_set_api_spec(add_auth) |>
   pr_run(
     port = 8008,
-    host = '0.0.0.0'
+    host = "0.0.0.0"
   )
