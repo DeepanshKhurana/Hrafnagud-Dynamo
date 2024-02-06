@@ -18,15 +18,15 @@ box::use(
 )
 
 box::use(
-  # `Hrafnagud-Dynamo`/utils/dynamodb_utils[
-  utils/dynamodb_utils[
+  `Hrafnagud-Dynamo`/utils/dynamodb_utils[
+  # utils/dynamodb_utils[
     get_processed_table_data,
     get_table_schema,
     put_table_row,
     delete_table_row
   ],
-  # `Hrafnagud-Dynamo`/utils/sheets_utils[
-  utils/sheets_utils[
+  `Hrafnagud-Dynamo`/utils/sheets_utils[
+  # utils/sheets_utils[
     load_sheet
   ]
 )
