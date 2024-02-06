@@ -50,39 +50,41 @@ format_price <- function(
 #' @return A data frame containing columns for Stock, Date, Quantity, and
 #' Average Day Price
 #' @export
-calculate_avg_day_price <-
-  function(stock_vector, transaction_type) {
-    stock_vector <- stock_vector |>
-      mutate(
-        TotalChargeRate =
-          (transaction_type * (Brokerage + Charges + StampDuty)) / Quantity,
-        Price = Price + TotalChargeRate
-      ) |>
-      select(-c(Brokerage, Charges, StampDuty, STT, Name, TotalChargeRate)) |>
-      mutate(Date = as.Date(Date)) |>
-      select(Stock, Date, Quantity, Price) |>
-      mutate(
-        Quantity = Quantity,
-        Cost = Price * Quantity
-      ) |>
-      group_by(Stock, Date) |>
-      mutate(AvgDayPrice = (Cost + lag(Cost)) / (Quantity + lag(Quantity))) |>
-      mutate(AvgDayPrice = case_when(
-        is.na(AvgDayPrice) ~ Price,
-        TRUE ~ AvgDayPrice
-      )) |>
-      summarise(
-        Quantity = sum(Quantity),
-        AvgDayPrice = AvgDayPrice
-      ) |>
-      group_by(Stock, Date) |>
-      slice(n()) |>
-      ungroup() |>
-      uncount(Quantity) |>
-      data.frame()
+calculate_avg_day_price <- function(
+  stock_vector,
+  transaction_type
+) {
+  stock_vector <- stock_vector |>
+    mutate(
+      TotalChargeRate =
+        (transaction_type * (Brokerage + Charges + StampDuty)) / Quantity,
+      Price = Price + TotalChargeRate
+    ) |>
+    select(-c(Brokerage, Charges, StampDuty, STT, Name, TotalChargeRate)) |>
+    mutate(Date = as.Date(Date)) |>
+    select(Stock, Date, Quantity, Price) |>
+    mutate(
+      Quantity = Quantity,
+      Cost = Price * Quantity
+    ) |>
+    group_by(Stock, Date) |>
+    mutate(AvgDayPrice = (Cost + lag(Cost)) / (Quantity + lag(Quantity))) |>
+    mutate(AvgDayPrice = case_when(
+      is.na(AvgDayPrice) ~ Price,
+      TRUE ~ AvgDayPrice
+    )) |>
+    summarise(
+      Quantity = sum(Quantity),
+      AvgDayPrice = AvgDayPrice
+    ) |>
+    group_by(Stock, Date) |>
+    slice(n()) |>
+    ungroup() |>
+    uncount(Quantity) |>
+    data.frame()
 
-    stock_vector
-  }
+  stock_vector
+}
 
 #' @description Returns a subset of a stocks dataframe based on the subset type.
 #' @param stocks_processed A list with two dataframes, each with columns Stock,
@@ -92,7 +94,10 @@ calculate_avg_day_price <-
 #' @return A subset of the stocks_processed dataframe based on the subset_type
 #' specified
 #' @export
-get_subset <- function(stocks_processed, subset_type) {
+get_subset <- function(
+    stocks_processed,
+    subset_type
+) {
   if (subset_type %in% c("Buys", "Sells")) {
     stocks_processed[[subset_type]]
   } else {
@@ -108,7 +113,10 @@ get_subset <- function(stocks_processed, subset_type) {
 #' @return A dataframe with columns for Stock and the specified
 #' column_name with its summarized quantity
 #' @export
-summarise_quantity <- function(subset, column_name = "BuyQty") {
+summarise_quantity <- function(
+  subset,
+  column_name = "BuyQty"
+) {
   if (column_name %in% c("BuyQty", "SellQty")) {
     subset |>
       group_by(Stock) |>
@@ -127,7 +135,10 @@ summarise_quantity <- function(subset, column_name = "BuyQty") {
 #' @return A dataframe with columns for Stock and the remaining quantity after
 #' considering both buy and sell transactions
 #' @export
-calculate_quantity <- function(buys, sells) {
+calculate_quantity <- function(
+  buys,
+  sells
+) {
   buy_qty <- summarise_quantity(buys, "BuyQty")
   sell_qty <- summarise_quantity(sells, "SellQty")
 
@@ -149,7 +160,11 @@ calculate_quantity <- function(buys, sells) {
 #' @return A dataframe with columns for Stock, Date, Average Day Price, and
 #' Average Sell Price for initial positions of stocks.
 #' @export
-get_initial_positions <- function(quantity, buys, sells) {
+get_initial_positions <- function(
+  quantity,
+  buys,
+  sells
+) {
   positions <- quantity |>
     filter(Stock %in% sells$Stock) |>
     group_by(Stock) |>
@@ -174,7 +189,10 @@ get_initial_positions <- function(quantity, buys, sells) {
 #' of each stock.
 #' @return A dataframe with columns for Stock, Quantity, and Realized gain/loss
 #' @export
-calculate_realized <- function(positions, quantity) {
+calculate_realized <- function(
+  positions,
+  quantity
+) {
   realized <- positions |>
     mutate(Realized = case_when(
       AvgSellPrice == 0 ~ 0,
@@ -205,26 +223,28 @@ calculate_realized <- function(positions, quantity) {
 #' @return A dataframe with columns for Stock, Quantity, Realized, and
 #' Average Price for final positions of stocks.
 #' @export
-calculate_final_positions <-
-  function(initial_positions, realized, buys) {
-    buy_positions <- buys |>
-      filter(!(Stock %in% initial_positions$Stock)) |>
-      select(Stock, Date, AvgDayPrice) |>
-      group_by(Stock) |>
-      summarise(AvgPrice = mean(AvgDayPrice))
+calculate_final_positions <- function(
+  initial_positions,
+  realized,
+  buys
+) {
+  buy_positions <- buys |>
+    filter(!(Stock %in% initial_positions$Stock)) |>
+    select(Stock, Date, AvgDayPrice) |>
+    group_by(Stock) |>
+    summarise(AvgPrice = mean(AvgDayPrice))
 
-    current_positions <- initial_positions |>
-      filter(AvgSellPrice == 0) |>
-      select(Stock, Date, AvgDayPrice) |>
-      group_by(Stock) |>
-      summarise(AvgPrice = mean(AvgDayPrice))
+  current_positions <- initial_positions |>
+    filter(AvgSellPrice == 0) |>
+    select(Stock, Date, AvgDayPrice) |>
+    group_by(Stock) |>
+    summarise(AvgPrice = mean(AvgDayPrice))
 
-    positions <- rbind(buy_positions, current_positions) |>
-      arrange(Stock)
+  positions <- rbind(buy_positions, current_positions) |>
+    arrange(Stock)
 
-    positions <- merge(realized, positions) |>
-      mutate(AvgPrice = true_round(AvgPrice, 2))
+  positions <- merge(realized, positions) |>
+    mutate(AvgPrice = true_round(AvgPrice, 2))
 
-    positions
-  }
-
+  positions
+}
