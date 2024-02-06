@@ -18,14 +18,20 @@ box::use(
 )
 
 box::use(
-  `Hrafnagud-Dynamo`/utils/dynamodb_utils[
-  # utils/dynamodb_utils[
+  # `Hrafnagud-Dynamo`/utils/dynamodb_utils[
+  utils/dynamodb_utils[
     get_processed_table_data,
     get_table_schema,
     put_table_row,
     delete_table_row
+  ],
+  # `Hrafnagud-Dynamo`/utils/sheets_utils[
+  utils/sheets_utils[
+    load_sheet
   ]
 )
+
+# Helper ----
 
 #' Function to help with API Authentication
 #' @param res the response object from Plumber
@@ -50,12 +56,17 @@ auth_helper <- function(
   }
 }
 
+# API Spec ----
+
 #* @apiTitle Hrafnagud
 #* @apiDescription An all-seeing API for personal use
 #* @apiTag CRUD DynamoDb Utility Endpoints
+#* @apiTag Ticker Custom Google Finance Endpoints
 #* @apiTag Livingston Trip-related Endpoints
 #* @apiTag Ebenezer Finance-related Endpoints
 #* @apiTag Fogg Task-related Endpoints
+
+## CRUD ----
 
 #* Schema
 #* @param table_name:chr The table name to fetch the schema for.
@@ -165,6 +176,8 @@ function(
   )
 }
 
+## Livingston ----
+
 #* Trips
 #* @get /livingston/trips
 #* @tag Livingston
@@ -232,4 +245,36 @@ function(
       trip_status = c("Past", "Ongoing", "Upcoming"),
       fill = list(trip_count = 0)
     )
+}
+
+## Ticker ----
+
+#* Stocks
+#* @get /ticker/stocks
+#* @tag Ticker
+function(
+  res,
+  req
+) {
+  auth_helper(
+    res,
+    req,
+    load_sheet,
+    sheet_name = "Stocks"
+  )
+}
+
+#* Funds
+#* @get /ticker/funds
+#* @tag Ticker
+function(
+    res,
+    req
+) {
+  auth_helper(
+    res,
+    req,
+    load_sheet,
+    sheet_name = "Funds"
+  )
 }
