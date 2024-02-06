@@ -5,7 +5,8 @@ box::use(
     case_when,
     summarise,
     group_by,
-    n
+    n,
+    select
   ],
   lubridate[
     dmy,
@@ -18,25 +19,25 @@ box::use(
 )
 
 box::use(
-  `Hrafnagud-Dynamo`/utils/dynamodb_utils[
-#  utils/dynamodb_utils[
+#  `Hrafnagud-Dynamo`/utils/dynamodb_utils[
+  utils/dynamodb_utils[
     get_processed_table_data,
     get_table_schema,
     put_table_row,
     delete_table_row
   ],
-  `Hrafnagud-Dynamo`/utils/sheets_utils[
-#  utils/sheets_utils[
+#  `Hrafnagud-Dynamo`/utils/sheets_utils[
+  utils/sheets_utils[
     load_sheet
   ],
-  `Hrafnagud-Dynamo`/utils/gold_utils[
-#  utils/gold_utils[
+#  `Hrafnagud-Dynamo`/utils/gold_utils[
+  utils/gold_utils[
     get_mmtc_price,
     get_bullions_price
   ],
-`Hrafnagud-Dynamo`/utils/stocks_utils[
-  #  utils/stocks_utils[
-  ...
+# `Hrafnagud-Dynamo`/utils/stocks_utils[
+  utils/stocks_utils[
+    calculate_portfolio
   ]
 )
 
@@ -400,8 +401,8 @@ function(
 #* @get /ebenezer/sgbs
 #* @tag Ebenezer
 function(
-    res,
-    req
+  res,
+  req
 ) {
   auth_helper(
     res,
@@ -409,4 +410,32 @@ function(
     get_processed_table_data,
     table_name = "ebenezer_sgbs"
   )
+}
+
+#* Portfolio
+#* @get /ebenezer/portfolio
+#* @tag Ebenezer
+function(
+  res,
+  req
+) {
+  ticker_data <- auth_helper(
+        res,
+        req,
+        load_sheet,
+        sheet_name = "Stocks"
+      )
+
+  stocks_data <- auth_helper(
+      res,
+      req,
+      get_processed_table_data,
+      table_name = "ebenezer_stocks"
+    )
+
+  calculate_portfolio(
+    stocks_data,
+    ticker_data
+  )
+
 }
