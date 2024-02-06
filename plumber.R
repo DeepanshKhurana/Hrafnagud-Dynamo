@@ -279,8 +279,8 @@ function(
 #* @get /ticker/funds
 #* @tag Ticker
 function(
-    res,
-    req
+  res,
+  req
 ) {
   auth_helper(
     res,
@@ -337,18 +337,33 @@ function(
   )
 }
 
-#* Funds
+#* Mutual Funds
 #* @get /ebenezer/funds
 #* @tag Ebenezer
 function(
   res,
   req
 ) {
-  auth_helper(
+  ticker_data <- auth_helper(
+    res,
+    req,
+    load_sheet,
+    sheet_name = "Funds"
+  )
+
+  funds_data <- auth_helper(
     res,
     req,
     get_processed_table_data,
     table_name = "ebenezer_funds"
+  )
+
+  merge(
+    funds_data |>
+      select(-provider),
+    ticker_data,
+    by.x = "name",
+    by.y = "fund_name"
   )
 }
 
@@ -420,11 +435,11 @@ function(
   req
 ) {
   ticker_data <- auth_helper(
-        res,
-        req,
-        load_sheet,
-        sheet_name = "Stocks"
-      )
+      res,
+      req,
+      load_sheet,
+      sheet_name = "Stocks"
+    )
 
   stocks_data <- auth_helper(
       res,
