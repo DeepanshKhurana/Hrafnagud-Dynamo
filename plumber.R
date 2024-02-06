@@ -19,15 +19,20 @@ box::use(
 
 box::use(
   `Hrafnagud-Dynamo`/utils/dynamodb_utils[
-  # utils/dynamodb_utils[
+#  utils/dynamodb_utils[
     get_processed_table_data,
     get_table_schema,
     put_table_row,
     delete_table_row
   ],
   `Hrafnagud-Dynamo`/utils/sheets_utils[
-  # utils/sheets_utils[
+#  utils/sheets_utils[
     load_sheet
+  ],
+  `Hrafnagud-Dynamo`/utils/sheets_utils[
+#  utils/gold_utils[
+    get_mmtc_price,
+    get_bullions_price
   ]
 )
 
@@ -62,6 +67,7 @@ auth_helper <- function(
 #* @apiDescription An all-seeing API for personal use
 #* @apiTag CRUD DynamoDb Utility Endpoints
 #* @apiTag Ticker Custom Google Finance Endpoints
+#* @apiTag Midas Custom Gold Price Endpoints
 #* @apiTag Livingston Trip-related Endpoints
 #* @apiTag Ebenezer Finance-related Endpoints
 #* @apiTag Fogg Task-related Endpoints
@@ -278,3 +284,34 @@ function(
     sheet_name = "Funds"
   )
 }
+
+## Midas ----
+
+#* MMTC
+#* @get /midas/mmtc
+#* @tag Midas
+function(
+  res,
+  req
+) {
+  auth_helper(
+    res,
+    req,
+    get_mmtc_price
+  )
+}
+
+#* Bullions
+#* @get /midas/bullions
+#* @tag Midas
+function(
+    res,
+    req
+) {
+  auth_helper(
+    res,
+    req,
+    get_bullions_price
+  )
+}
+
