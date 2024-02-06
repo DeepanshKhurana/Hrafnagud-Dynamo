@@ -72,7 +72,8 @@ get_table_data <- function(
         limit == 0,
         NA,
         limit
-      )
+      ),
+      ConsistentRead = TRUE
     )
   } else {
     stop(
