@@ -1,3 +1,7 @@
+box::use(
+  dplyr[...]
+)
+
 ## Utils ----
 
 #' @description function to round a number correctly
@@ -43,7 +47,7 @@ format_price <- function(
 
 #' @description Calculates the average day price for a given stock vector.
 #' @param stock_vector A data frame containing information about stocks
-#' including columns for Stock, Date, Quantity, Price, Brokerage, Charges,
+#' including columns for Stock, Date, Quantity, Price, brokerage, Charges,
 #' StampDuty, and STT.
 #' @param transaction_type A numeric value indicating the type of transaction
 #' (buy or sell)
@@ -56,31 +60,31 @@ calculate_avg_day_price <- function(
 ) {
   stock_vector <- stock_vector |>
     mutate(
-      TotalChargeRate =
-        (transaction_type * (Brokerage + Charges + StampDuty)) / Quantity,
-      Price = Price + TotalChargeRate
+      total_charge_rate =
+        (transaction_type * (brokerage + charges + stamp_duty)) / quantity,
+      price = price + total_charge_rate
     ) |>
-    select(-c(Brokerage, Charges, StampDuty, STT, Name, TotalChargeRate)) |>
-    mutate(Date = as.Date(Date)) |>
-    select(Stock, Date, Quantity, Price) |>
+    select(-c(brokerage, charges, stamp_duty, stt, name, total_charge_rate)) |>
+    mutate(date = as.Date(date)) |>
+    select(stock, date, quantity, price) |>
     mutate(
-      Quantity = Quantity,
-      Cost = Price * Quantity
+      quantity = quantity,
+      cost = price * quantity
     ) |>
-    group_by(Stock, Date) |>
-    mutate(AvgDayPrice = (Cost + lag(Cost)) / (Quantity + lag(Quantity))) |>
-    mutate(AvgDayPrice = case_when(
-      is.na(AvgDayPrice) ~ Price,
-      TRUE ~ AvgDayPrice
+    group_by(stock, date) |>
+    mutate(avg_day_price = (cost + lag(cost)) / (quantity + lag(quantity))) |>
+    mutate(avg_day_price = case_when(
+      is.na(avg_day_price) ~ price,
+      TRUE ~ avg_day_price
     )) |>
     summarise(
-      Quantity = sum(Quantity),
-      AvgDayPrice = AvgDayPrice
+      quantity = sum(quantity),
+      avg_day_price = avg_day_price
     ) |>
-    group_by(Stock, Date) |>
+    group_by(stock, date) |>
     slice(n()) |>
     ungroup() |>
-    uncount(Quantity) |>
+    uncount(quantity) |>
     data.frame()
 
   stock_vector
@@ -115,14 +119,14 @@ get_subset <- function(
 #' @export
 summarise_quantity <- function(
   subset,
-  column_name = "BuyQty"
+  column_name = "buy_qty"
 ) {
-  if (column_name %in% c("BuyQty", "SellQty")) {
+  if (column_name %in% c("buy_qty", "sell_qty")) {
     subset |>
-      group_by(Stock) |>
+      group_by(stock) |>
       summarise(!!(column_name) := n())
   } else {
-    return("column_name can only be one of `BuyQty` or `SellQty`.")
+    return("column_name can only be one of `buy_qty` or `sell_qty`.")
   }
 }
 
@@ -139,15 +143,15 @@ calculate_quantity <- function(
   buys,
   sells
 ) {
-  buy_qty <- summarise_quantity(buys, "BuyQty")
-  sell_qty <- summarise_quantity(sells, "SellQty")
+  buy_qty <- summarise_quantity(buys, "buy_qty")
+  sell_qty <- summarise_quantity(sells, "sell_qty")
 
   buy_sell <- left_join(buy_qty, sell_qty, by = "Stock")
-  buy_sell[is.na(buy_sell$SellQty), "SellQty"] <- 0
-  buy_sell$Remaining <- buy_sell$BuyQty - buy_sell$SellQty
+  buy_sell[is.na(buy_sell$sell_qty), "sell_qty"] <- 0
+  buy_sell$remaining <- buy_sell$buy_qty - buy_sell$sell_qty
 
   buy_sell |>
-    select(Stock, Remaining)
+    select(stock, remaining)
 }
 
 #' Get initial positions of stocks.
@@ -166,20 +170,20 @@ get_initial_positions <- function(
   sells
 ) {
   positions <- quantity |>
-    filter(Stock %in% sells$Stock) |>
-    group_by(Stock) |>
-    uncount(Remaining) |>
+    filter(stock %in% sells$stock) |>
+    group_by(stock) |>
+    uncount(remaining) |>
     mutate(
-      Date = Sys.Date(),
-      AvgSellPrice = 0
+      date = Sys.Date(),
+      avg_sell_price = 0
     )
 
-  sells <- rbind(sells, positions) |> arrange(Stock, Date)
-  buys <- buys |> arrange(Stock, Date)
-  trxns <- buys |> filter(Stock %in% sells$Stock)
+  sells <- rbind(sells, positions) |> arrange(stock, date)
+  buys <- buys |> arrange(stock, date)
+  trxns <- buys |> filter(stock %in% sells$stock)
 
   cbind(trxns, sells) |>
-    select(c(1, 2, AvgDayPrice, AvgSellPrice))
+    select(c(1, 2, avg_day_price, avg_sell_price))
 }
 
 #' Calculates the realized gain/loss for each stock.
@@ -194,20 +198,20 @@ calculate_realized <- function(
   quantity
 ) {
   realized <- positions |>
-    mutate(Realized = case_when(
-      AvgSellPrice == 0 ~ 0,
-      TRUE ~ AvgSellPrice - AvgDayPrice
+    mutate(realized = case_when(
+      avg_sell_price == 0 ~ 0,
+      TRUE ~ avg_sell_price - avg_day_price
     )) |>
-    group_by(Stock) |>
-    summarise(Realized = sum(Realized))
+    group_by(stock) |>
+    summarise(realized = sum(realized))
 
-  realized <- left_join(quantity, realized, by = "Stock") |>
-    mutate(Realized = case_when(
-      is.na(Realized) ~ 0,
-      TRUE ~ true_round(Realized, 2)
+  realized <- left_join(quantity, realized, by = "stock") |>
+    mutate(realized = case_when(
+      is.na(realized) ~ 0,
+      TRUE ~ true_round(realized, 2)
     ))
 
-  colnames(realized) <- c("Stock", "Quantity", "Realized")
+  colnames(realized) <- c("stock", "quantity", "realized")
 
   realized
 }
@@ -229,22 +233,22 @@ calculate_final_positions <- function(
   buys
 ) {
   buy_positions <- buys |>
-    filter(!(Stock %in% initial_positions$Stock)) |>
-    select(Stock, Date, AvgDayPrice) |>
-    group_by(Stock) |>
-    summarise(AvgPrice = mean(AvgDayPrice))
+    filter(!(stock %in% initial_positions$stock)) |>
+    select(stock, date, avg_day_price) |>
+    group_by(stock) |>
+    summarise(avg_price = mean(avg_day_price))
 
   current_positions <- initial_positions |>
-    filter(AvgSellPrice == 0) |>
-    select(Stock, Date, AvgDayPrice) |>
-    group_by(Stock) |>
-    summarise(AvgPrice = mean(AvgDayPrice))
+    filter(avg_sell_price == 0) |>
+    select(stock, date, avg_day_price) |>
+    group_by(stock) |>
+    summarise(avg_price = mean(avg_day_price))
 
   positions <- rbind(buy_positions, current_positions) |>
-    arrange(Stock)
+    arrange(stock)
 
   positions <- merge(realized, positions) |>
-    mutate(AvgPrice = true_round(AvgPrice, 2))
+    mutate(avg_price = true_round(avg_price, 2))
 
   positions
 }

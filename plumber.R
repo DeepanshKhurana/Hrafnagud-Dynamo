@@ -33,6 +33,10 @@ box::use(
 #  utils/gold_utils[
     get_mmtc_price,
     get_bullions_price
+  ],
+`Hrafnagud-Dynamo`/utils/stocks_utils[
+  #  utils/stocks_utils[
+  ...
   ]
 )
 
