@@ -1,5 +1,6 @@
-#' @export
-#'
+#' @description function to round a number correctly
+#' @param number the number to round
+#' @param digits the digits to round till
 true_round <- function(
   number,
   digits
@@ -13,8 +14,6 @@ true_round <- function(
   number * posneg
 }
 
-#' @export
-#'
 #' @description function to format price/change values
 #' @param value the value to format
 #' @param round the digits to round till
