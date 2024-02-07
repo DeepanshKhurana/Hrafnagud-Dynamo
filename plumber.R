@@ -35,7 +35,7 @@ box::use(
     get_mmtc_price,
     get_bullions_price
   ],
- `Hrafnagud-Dynamo`/utils/stocks_utils[
+  `Hrafnagud-Dynamo`/utils/stocks_utils[
 #  utils/stocks_utils[
     calculate_portfolio
   ]
@@ -310,8 +310,8 @@ function(
 #* @get /midas/bullions
 #* @tag Midas
 function(
-    res,
-    req
+  res,
+  req
 ) {
   auth_helper(
     res,
@@ -435,18 +435,18 @@ function(
   req
 ) {
   ticker_data <- auth_helper(
-      res,
-      req,
-      load_sheet,
-      sheet_name = "Stocks"
-    )
+    res,
+    req,
+    load_sheet,
+    sheet_name = "Stocks"
+  )
 
   stocks_data <- auth_helper(
-      res,
-      req,
-      get_processed_table_data,
-      table_name = "ebenezer_stocks"
-    )
+    res,
+    req,
+    get_processed_table_data,
+    table_name = "ebenezer_stocks"
+  )
 
   calculate_portfolio(
     stocks_data,

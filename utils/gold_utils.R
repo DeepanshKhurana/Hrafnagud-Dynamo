@@ -17,21 +17,20 @@ get_mmtc_price <- function(
   web_link = "https://www.mmtcpamp.com/gold-silver-rate-today"
 ) {
   tryCatch({
-      html <- read_html(web_link)
-      list(
-        "sell" = as.numeric(html_text(html_node(html, "#sellGoldPrice"))),
-        "buy" = as.numeric(html_text(html_node(html, "#goldPrice")))
-      )
-    },
-    error = function(e) {
-      message("Failed to fetch prices from the provided link. \
-              Setting prices to 0, 0.")
-      list(
-        sell = 0,
-        buy = 0
-      )
-    }
-  )
+    html <- read_html(web_link)
+    list(
+      "sell" = as.numeric(html_text(html_node(html, "#sellGoldPrice"))),
+      "buy" = as.numeric(html_text(html_node(html, "#goldPrice")))
+    )
+  },
+  error = function(e) {
+    message("Failed to fetch prices from the provided link. \
+            Setting prices to 0, 0.")
+    list(
+      sell = 0,
+      buy = 0
+    )
+  })
 }
 
 #' @export
@@ -42,15 +41,14 @@ get_bullions_price <- function(
   web_link = "https://bullions.co.in/"
 ) {
   tryCatch({
-      html <- read_html(web_link)
-      price <- html_text(html_nodes(html, ".data-box-half-value"))[1]
-      price <- as.numeric(gsub(",", "", str_trim(price)))
-      price / 10 # Bullion's rate is per 10gm
-    },
-    error = function(e) {
-      message("Failed to fetch prices from the provided link. \
+    html <- read_html(web_link)
+    price <- html_text(html_nodes(html, ".data-box-half-value"))[1]
+    price <- as.numeric(gsub(",", "", str_trim(price)))
+    price / 10 # Bullion's rate is per 10gm
+  },
+  error = function(e) {
+    message("Failed to fetch prices from the provided link. \
               Setting prices to 0, 0.")
-      list(price = 0)
-    }
-  )
+    list(price = 0)
+  })
 }

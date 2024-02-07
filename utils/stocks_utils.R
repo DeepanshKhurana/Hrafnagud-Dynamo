@@ -110,8 +110,8 @@ calculate_avg_day_price <- function(
 #' @return A subset of the stocks_processed dataframe based on the subset_type
 #' specified
 get_subset <- function(
-    stocks_processed,
-    subset_type
+  stocks_processed,
+  subset_type
 ) {
   if (subset_type %in% c("Buys", "Sells")) {
     stocks_processed[[subset_type]]
