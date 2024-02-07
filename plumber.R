@@ -22,24 +22,24 @@ box::use(
 )
 
 box::use(
-#  `Hrafnagud-Dynamo`/utils/crud_utils[
-  utils/crud_utils[
+  `Hrafnagud-Dynamo`/utils/crud_utils[
+#  utils/crud_utils[
     get_processed_table_data,
     get_table_schema,
     put_table_row,
     delete_table_row
   ],
-#  `Hrafnagud-Dynamo`/utils/ticker_utils[
-  utils/ticker_utils[
+  `Hrafnagud-Dynamo`/utils/ticker_utils[
+#  utils/ticker_utils[
     load_sheet
   ],
-#  `Hrafnagud-Dynamo`/utils/midas_utils[
-  utils/midas_utils[
+  `Hrafnagud-Dynamo`/utils/midas_utils[
+#  utils/midas_utils[
     get_mmtc_price,
     get_bullions_price
   ],
-#  `Hrafnagud-Dynamo`/utils/ebenezer_utils[
-  utils/ebenezer_utils[
+  `Hrafnagud-Dynamo`/utils/ebenezer_utils[
+#  utils/ebenezer_utils[
     calculate_portfolio,
     summarise_portfolio,
     summarise_funds,
