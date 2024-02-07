@@ -381,3 +381,37 @@ calculate_portfolio <- function(
     ungroup() |>
     data.frame()
 }
+
+#' Calculate the portfolio and return the final table
+#' @param stocks_data the stocks data being fetched from the API
+#' @param ticker_data the ticker data being fetched from the API
+#' @export
+calculate_portfolio_summary <- function(
+    stocks_data,
+    ticker_data
+) {
+  portfolio <- calculate_portfolio(
+    stocks_data,
+    ticker_data
+  )
+
+  list(
+    "total_scrips" = portfolio |>
+      summarise(scripts = n()) |>
+      unname() |>
+      unlist(),
+    "total_realized" = portfolio |>
+      summarise(realized = sum(realized)) |>
+      unname() |>
+      unlist(),
+    "invested" = portfolio |>
+      summarise(invested = sum(holding_value)) |>
+      unname() |>
+      unlist(),
+    "current" = portfolio |>
+      mutate(current = unrealized + holding_value) |>
+      summarise(current = sum(current)) |>
+      unname() |>
+      unlist()
+  )
+}
