@@ -5,11 +5,12 @@ box::use(
   ]
 )
 
-## Utils ----
+# Utils ----
 
 #' @description function to round a number correctly
 #' @param number the number to round
 #' @param digits the digits to round till
+#' @export
 true_round <- function(
   number,
   digits
@@ -29,7 +30,7 @@ true_round <- function(
 #' @param format the number format "d" or "f"
 #' @param big the separator for big values, default ","
 #' @return character url for the sheet for the user
-#'
+#' @export
 format_price <- function(
   value,
   round = 2,
@@ -317,6 +318,8 @@ process_stocks_data <- function(
     )
 }
 
+## Portfolio ----
+
 #' Calculate the portfolio and return the final table
 #' @param stocks_data the stocks data being fetched from the API
 #' @param ticker_data the ticker data being fetched from the API
@@ -386,9 +389,9 @@ calculate_portfolio <- function(
 #' @param stocks_data the stocks data being fetched from the API
 #' @param ticker_data the ticker data being fetched from the API
 #' @export
-calculate_portfolio_summary <- function(
-    stocks_data,
-    ticker_data
+summarise_portfolio <- function(
+  stocks_data,
+  ticker_data
 ) {
   portfolio <- calculate_portfolio(
     stocks_data,
@@ -413,5 +416,218 @@ calculate_portfolio_summary <- function(
       summarise(current = sum(current)) |>
       unname() |>
       unlist()
+  )
+}
+
+# Funds ----
+
+#' Process the funds data and add some required columns
+#' @param ticker_data the ticker data being fetched from the API
+#' @param funds_data the stocks data being fetched from the API
+process_funds <- function(
+  funds_data,
+  ticker_data
+) {
+  merge(
+    funds_data |>
+      select(-provider),
+    ticker_data,
+    by.x = "name",
+    by.y = "fund_name"
+  ) |>
+    mutate(
+      current_value = true_round(
+        as.numeric(unit_balance) * as.numeric(current_price),
+        0
+      ),
+      profit = true_round(
+        as.numeric(current_value) - as.numeric(total_invested),
+        0
+      ),
+      change_percent = true_round(
+        as.numeric(profit) * 100 / as.numeric(total_invested),
+        2
+      )
+    )
+}
+
+#' Process the funds data and add some required columns
+#' @param ticker_data the ticker data being fetched from the API
+#' @param funds_data the stocks data being fetched from the API
+#' @export
+summarise_funds <- function(
+  funds_data,
+  ticker_data
+) {
+  funds_data <- process_funds(
+    funds_data,
+    ticker_data
+  )
+  list(
+    "invested" = sum(
+      as.numeric(funds_data$total_invested)
+    ),
+    "current" = sum(
+      as.numeric(funds_data$current_value)
+    )
+  )
+}
+
+# Deposits ----
+
+#' Process the deposits data
+#' @param deposits_data the deposits data being fetched from the API
+process_deposits <- function(
+  deposits_data
+) {
+  deposits_data$progress <- 1 - as.numeric(
+    difftime(
+      as.Date(
+        deposits_data$maturity_date,
+        format = "%d/%m/%y"
+      ),
+      as.Date(Sys.Date()),
+      units = "days"
+    )
+  ) / (as.numeric(deposits_data$tenure_years) * 365.25)
+
+  # Fix for negative values when the dates are the same - deposit creation
+
+  deposits_data$progress <- ifelse(
+    deposits_data$progress < 0,
+    0.00,
+    deposits_data$progress
+  )
+
+  deposits_data
+}
+
+#' Summarise the deposits data
+#' @param deposits_data the deposits data being fetched from the API
+#' @export
+summarise_deposits <- function(
+    deposits_data
+) {
+  deposits_data <- process_deposits(deposits_data)
+  list(
+    "invested" = sum(
+      as.numeric(
+        deposits_data$amount
+      )
+    ),
+    "current" = sum(
+      deposits_data$progress *
+        (as.numeric(deposits_data$maturity) -
+           as.numeric(deposits_data$amount)) +
+        as.numeric(deposits_data$amount)
+    )
+  )
+}
+
+# Savings ----
+
+#' Summarise the Savings data
+#' @param savings_data the Savings data being fetched from the API
+#' @export
+summarise_savings <- function(
+  savings_data
+) {
+  list(
+    "invested" = sum(
+      as.numeric(
+        savings_data$account_balance
+      )
+    ),
+    "current" = sum(
+      as.numeric(
+        savings_data$account_balance
+      )
+    )
+  )
+}
+
+# MMTC ----
+
+#' Process the MMTC data
+#' @param mmtc_data the MMTC data being fetched from the API
+#' @param mmtc_price the Midas price list for buy and sell for MMTC
+process_mmtc <- function(
+  mmtc_data,
+  mmtc_price
+) {
+  mmtc_data$grams <- as.numeric(mmtc_data$milligrams) / 100
+  mmtc_data$current_price <- as.numeric(
+    mmtc_data$grams
+  ) * as.numeric(
+    mmtc_price$sell
+  )
+  mmtc_data$bought_price <- as.numeric(
+    mmtc_data$total_invested
+  ) / as.numeric(
+    mmtc_data$grams
+  )
+  mmtc_data
+}
+
+#' Summarise the MMTC data
+#' @param mmtc_data the MMTC data being fetched from the API
+#' @param mmtc_price the Midas price list for buy and sell for MMTC
+#' @export
+summarise_mmtc <- function(
+    mmtc_data,
+    mmtc_price
+) {
+  mmtc_data <- process_mmtc(
+    mmtc_data,
+    mmtc_price
+  )
+  list(
+    "invested" = mmtc_data$total_invested,
+    "current" = mmtc_data$current_price
+  )
+}
+
+# SGBs ----
+
+#' Process the SGBs data
+#' @param sgbs_data the SGBs data being fetched from the API
+process_sgbs <- function(
+  sgbs_data
+) {
+  sgbs_data$progress <- 1 - as.numeric(
+    difftime(
+      as.Date(sgbs_data$maturity_date, format = "%d%m%y"),
+      as.Date(Sys.Date()),
+      units = "days"
+    )
+  ) / (8 * 365.25)
+
+  sgbs_data
+}
+
+#' Summarise the SGBs data
+#' @param sgbs_data the SGBs data being fetched from the API
+#' @export
+summarise_sgbs <- function(
+  sgbs_data,
+  bullions_price
+) {
+  sgbs_data <- process_sgbs(sgbs_data)
+  list(
+    "invested" = sum(
+      as.numeric(
+        sgbs_data$total
+      )
+    ),
+    "current" = sum(
+      as.numeric(
+        as.numeric(
+          sgbs_data$quantity
+        ) *
+          as.numeric(
+            bullions_price
+          )
+      )
+    )
   )
 }

@@ -15,30 +15,38 @@ box::use(
   ],
   tidyr[
     complete
+  ],
+  purrr[
+    map_dbl
   ]
 )
 
 box::use(
-#  `Hrafnagud-Dynamo`/utils/dynamodb_utils[
-  utils/dynamodb_utils[
+#  `Hrafnagud-Dynamo`/utils/crud_utils[
+  utils/crud_utils[
     get_processed_table_data,
     get_table_schema,
     put_table_row,
     delete_table_row
   ],
-#  `Hrafnagud-Dynamo`/utils/sheets_utils[
-  utils/sheets_utils[
+#  `Hrafnagud-Dynamo`/utils/ticker_utils[
+  utils/ticker_utils[
     load_sheet
   ],
-#  `Hrafnagud-Dynamo`/utils/gold_utils[
-  utils/gold_utils[
+#  `Hrafnagud-Dynamo`/utils/midas_utils[
+  utils/midas_utils[
     get_mmtc_price,
     get_bullions_price
   ],
-#  `Hrafnagud-Dynamo`/utils/stocks_utils[
-  utils/stocks_utils[
+#  `Hrafnagud-Dynamo`/utils/ebenezer_utils[
+  utils/ebenezer_utils[
     calculate_portfolio,
-    calculate_portfolio_summary
+    summarise_portfolio,
+    summarise_funds,
+    summarise_deposits,
+    summarise_savings,
+    summarise_mmtc,
+    summarise_sgbs
   ]
 )
 
@@ -80,6 +88,8 @@ auth_helper <- function(
 
 ## CRUD ----
 
+### Schema ----
+
 #* Schema
 #* @param table_name:chr The table name to fetch the schema for.
 #* @get /schema
@@ -97,6 +107,8 @@ function(
   )
 
 }
+
+### Create ----
 
 #* New row
 #* @param table_name:chr The table name to add the row to.
@@ -121,6 +133,8 @@ function(
   )
 }
 
+### Read ----
+
 #* Table
 #* @param table_name:chr The table name to fetch data from.
 #* @param limit:numeric The number of rows to limit at. Use 0 for all rows.
@@ -140,6 +154,8 @@ function(
     limit = as.numeric(limit)
   )
 }
+
+### Update ----
 
 #* Update row
 #* @param table_name:chr The table name to modify the row in.
@@ -164,6 +180,8 @@ function(
     is_update = TRUE
   )
 }
+
+### Delete ----
 
 #* Delete row
 #* @param table_name:chr The table name to remove the row from.
@@ -190,6 +208,8 @@ function(
 
 ## Livingston ----
 
+### Trips ----
+
 #* Trips
 #* @get /livingston/trips
 #* @tag Livingston
@@ -204,6 +224,8 @@ function(
     table_name = "livingston_trips"
   )
 }
+
+### Details ----
 
 #* Details
 #* @get /livingston/details
@@ -226,6 +248,8 @@ function(
     as.numeric(data$trip_id) == as.numeric(trip_id),
   ]
 }
+
+### Counts ----
 
 #* Counts
 #* @get /livingston/counts
@@ -261,6 +285,8 @@ function(
 
 ## Ticker ----
 
+### Stocks ----
+
 #* Stocks
 #* @get /ticker/stocks
 #* @tag Ticker
@@ -275,6 +301,8 @@ function(
     sheet_name = "Stocks"
   )
 }
+
+### Funds ----
 
 #* Funds
 #* @get /ticker/funds
@@ -293,6 +321,8 @@ function(
 
 ## Midas ----
 
+### MMTC ----
+
 #* MMTC
 #* @get /midas/mmtc
 #* @tag Midas
@@ -306,6 +336,8 @@ function(
     get_mmtc_price
   )
 }
+
+### Bullions ----
 
 #* Bullions
 #* @get /midas/bullions
@@ -323,6 +355,8 @@ function(
 
 ## Ebenezer ----
 
+### Stocks ----
+
 #* Stocks
 #* @get /ebenezer/stocks
 #* @tag Ebenezer
@@ -337,6 +371,8 @@ function(
     table_name = "ebenezer_stocks"
   )
 }
+
+### Mutual Funds ----
 
 #* Mutual Funds
 #* @get /ebenezer/funds
@@ -359,14 +395,13 @@ function(
     table_name = "ebenezer_funds"
   )
 
-  merge(
-    funds_data |>
-      select(-provider),
+  process_funds(
     ticker_data,
-    by.x = "name",
-    by.y = "fund_name"
+    funds_data
   )
 }
+
+### Deposits ----
 
 #* Deposits
 #* @get /ebenezer/deposits
@@ -383,6 +418,8 @@ function(
   )
 }
 
+### Savings ----
+
 #* Savings
 #* @get /ebenezer/savings
 #* @tag Ebenezer
@@ -397,6 +434,8 @@ function(
     table_name = "ebenezer_savings"
   )
 }
+
+### MMTC ----
 
 #* MMTC
 #* @get /ebenezer/mmtc
@@ -413,6 +452,8 @@ function(
   )
 }
 
+### SGBs ----
+
 #* SGBs
 #* @get /ebenezer/sgbs
 #* @tag Ebenezer
@@ -427,6 +468,8 @@ function(
     table_name = "ebenezer_sgbs"
   )
 }
+
+### Portfolio ----
 
 #* Portfolio
 #* @get /ebenezer/portfolio
@@ -455,15 +498,191 @@ function(
   )
 }
 
-#* Portfolio Summary
+### Stocks (Portfolio) Summary ----
+
+#* Stocks (Portfolio) Summary
 #* @get /ebenezer/summary/stocks
 #* @tag Ebenezer
-
 function(
   res,
   req
 ) {
   ticker_data <- auth_helper(
+    res,
+    req,
+    load_sheet,
+    sheet_name = "Stocks"
+  )
+  stocks_data <- auth_helper(
+    res,
+    req,
+    get_processed_table_data,
+    table_name = "ebenezer_stocks"
+  )
+  portfolio <- summarise_portfolio(
+    stocks_data,
+    ticker_data
+  )
+}
+
+### Mutual Funds Summary ----
+
+#* Mutual Funds Summary
+#* @get /ebenezer/summary/funds
+#* @tag Ebenezer
+function(
+  res,
+  req
+) {
+  ticker_data <- auth_helper(
+    res,
+    req,
+    load_sheet,
+    sheet_name = "Funds"
+  )
+  funds_data <- auth_helper(
+    res,
+    req,
+    get_processed_table_data,
+    table_name = "ebenezer_funds"
+  )
+  summarise_funds(
+    funds_data,
+    ticker_data
+  )
+}
+
+### Deposits Summary ----
+
+#* Deposits Summary
+#* @get /ebenezer/summary/deposits
+#* @tag Ebenezer
+function(
+  res,
+  req
+) {
+  deposits_data <- auth_helper(
+    res,
+    req,
+    get_processed_table_data,
+    table_name = "ebenezer_deposits"
+  )
+  summarise_deposits(deposits_data)
+}
+
+### Savings Summary ----
+
+#* Savings Summary
+#* @get /ebenezer/summary/savings
+#* @tag Ebenezer
+function(
+  res,
+  req
+) {
+  savings_data <- auth_helper(
+    res,
+    req,
+    get_processed_table_data,
+    table_name = "ebenezer_savings"
+  )
+  summarise_savings(savings_data)
+}
+
+### MMTC Summary ----
+
+#* MMTC Summary
+#* @get /ebenezer/summary/mmtc
+#* @tag Ebenezer
+function(
+  res,
+  req
+) {
+  mmtc_data <- auth_helper(
+    res,
+    req,
+    get_processed_table_data,
+    table_name = "ebenezer_mmtc"
+  )
+  summarise_mmtc(
+    mmtc_data,
+    get_mmtc_price()
+  )
+}
+
+### SGBs Summary ----
+
+#* SGBs Summary
+#* @get /ebenezer/summary/sgbs
+#* @tag Ebenezer
+function(
+  res,
+  req
+) {
+  sgbs_data <- auth_helper(
+    res,
+    req,
+    get_processed_table_data,
+    table_name = "ebenezer_sgbs"
+  )
+  summarise_sgbs(
+    sgbs_data,
+    get_bullions_price()
+  )
+}
+
+### Networth ----
+
+#* Networth
+#* @get /ebenezer/networth
+#* @tag Ebenezer
+function(
+  res,
+  req
+) {
+
+  sgbs_data <- auth_helper(
+    res,
+    req,
+    get_processed_table_data,
+    table_name = "ebenezer_sgbs"
+  )
+
+  mmtc_data <- auth_helper(
+    res,
+    req,
+    get_processed_table_data,
+    table_name = "ebenezer_mmtc"
+  )
+
+  savings_data <- auth_helper(
+    res,
+    req,
+    get_processed_table_data,
+    table_name = "ebenezer_savings"
+  )
+
+  deposits_data <- auth_helper(
+    res,
+    req,
+    get_processed_table_data,
+    table_name = "ebenezer_deposits"
+  )
+
+  funds_ticker_data <- auth_helper(
+    res,
+    req,
+    load_sheet,
+    sheet_name = "Funds"
+  )
+
+  funds_data <- auth_helper(
+    res,
+    req,
+    get_processed_table_data,
+    table_name = "ebenezer_funds"
+  )
+
+  stocks_ticker_data <- auth_helper(
     res,
     req,
     load_sheet,
@@ -477,8 +696,52 @@ function(
     table_name = "ebenezer_stocks"
   )
 
-  portfolio <- calculate_portfolio_summary(
-    stocks_data,
-    ticker_data
+  networth <- list(
+    "stocks" = summarise_portfolio(
+      stocks_data,
+      stocks_ticker_data
+    )[
+      c(
+        "invested",
+        "current"
+      )
+    ],
+    "funds" = summarise_funds(
+      funds_data,
+      funds_ticker_data
+    ),
+    "deposits" = summarise_deposits(
+      deposits_data
+    ),
+    "savings" = summarise_savings(
+      savings_data
+    ),
+    "mmtc" = summarise_mmtc(
+      mmtc_data,
+      get_mmtc_price()
+    ),
+    "sgbs" = summarise_sgbs(
+      sgbs_data,
+      get_bullions_price()
+    )
   )
+
+  totals <- list(
+    "invested" = lapply(
+      networth,
+      function(asset) asset$invested
+    ) |>
+      unlist() |>
+      as.numeric() |>
+      sum(),
+    "current" = lapply(
+      networth,
+      function(asset) asset$current
+    ) |>
+      unlist() |>
+      as.numeric() |>
+      sum()
+  )
+
+  c(list("networth" = totals), networth)
 }
