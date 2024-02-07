@@ -452,5 +452,32 @@ function(
     stocks_data,
     ticker_data
   )
+}
 
+#* Portfolio Summary
+#* @get /ebenezer/summary/stocks
+#* @tag Ebenezer
+
+function(
+  res,
+  req
+) {
+  ticker_data <- auth_helper(
+    res,
+    req,
+    load_sheet,
+    sheet_name = "Stocks"
+  )
+
+  stocks_data <- auth_helper(
+    res,
+    req,
+    get_processed_table_data,
+    table_name = "ebenezer_stocks"
+  )
+
+  portfolio <- calculate_portfolio_summary(
+    stocks_data,
+    ticker_data
+  )
 }
