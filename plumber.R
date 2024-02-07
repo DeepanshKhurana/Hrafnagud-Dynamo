@@ -29,8 +29,8 @@ box::use(
     put_table_row,
     delete_table_row
   ],
-  `Hrafnagud-Dynamo`/utils/ticker_utils[
-#  utils/ticker_utils[
+  `Hrafnagud-Dynamo`/utils/robin_utils[
+#  utils/robin_utils[
     load_sheet
   ],
   `Hrafnagud-Dynamo`/utils/midas_utils[
@@ -80,11 +80,11 @@ auth_helper <- function(
 #* @apiTitle Hrafnagud
 #* @apiDescription An all-seeing API for personal use
 #* @apiTag CRUD DynamoDb Utility Endpoints
-#* @apiTag Ticker Custom Google Finance Endpoints
-#* @apiTag Midas Custom Gold Price Endpoints
+#* @apiTag Robin Custom Google Finance Ticker Endpoints
+#* @apiTag Midas Custom Gold Price Crawler Endpoints
 #* @apiTag Livingston Trip-related Endpoints
 #* @apiTag Ebenezer Finance-related Endpoints
-#* @apiTag Fogg Task-related Endpoints
+#* @apiTag Fogg Todoist Task-related Endpoints
 
 ## CRUD ----
 
@@ -283,13 +283,13 @@ function(
     )
 }
 
-## Ticker ----
+## Robin ----
 
 ### Stocks ----
 
 #* Stocks
-#* @get /ticker/stocks
-#* @tag Ticker
+#* @get /robin/stocks
+#* @tag Robin
 function(
   res,
   req
@@ -305,8 +305,8 @@ function(
 ### Funds ----
 
 #* Funds
-#* @get /ticker/funds
-#* @tag Ticker
+#* @get /robin/funds
+#* @tag Robin
 function(
   res,
   req
