@@ -42,6 +42,7 @@ box::use(
 #  utils/ebenezer_utils[
     calculate_portfolio,
     summarise_portfolio,
+    calculate_funds,
     summarise_funds,
     summarise_deposits,
     summarise_savings,
@@ -395,9 +396,9 @@ function(
     table_name = "ebenezer_funds"
   )
 
-  process_funds(
-    ticker_data,
-    funds_data
+  calculate_funds(
+    funds_data,
+    ticker_data
   )
 }
 

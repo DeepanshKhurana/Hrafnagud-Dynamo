@@ -424,7 +424,8 @@ summarise_portfolio <- function(
 #' Process the funds data and add some required columns
 #' @param ticker_data the ticker data being fetched from the API
 #' @param funds_data the stocks data being fetched from the API
-process_funds <- function(
+#' @export
+calculate_funds <- function(
   funds_data,
   ticker_data
 ) {
@@ -459,7 +460,7 @@ summarise_funds <- function(
   funds_data,
   ticker_data
 ) {
-  funds_data <- process_funds(
+  funds_data <- calculate_funds(
     funds_data,
     ticker_data
   )
