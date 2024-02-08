@@ -407,6 +407,10 @@ summarise_portfolio <- function(
       summarise(realized = sum(realized)) |>
       unname() |>
       unlist(),
+    "unrealized" = portfolio |>
+      mutate(unrealized = sum(unrealized)) |>
+      unname() |>
+      unlist(),
     "invested" = portfolio |>
       summarise(invested = sum(holding_value)) |>
       unname() |>
