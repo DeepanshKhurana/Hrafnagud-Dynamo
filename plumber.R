@@ -202,7 +202,7 @@ function(
     req,
     delete_table_row,
     table_name = table_name,
-    row_key = as.numeric(row_key),
+    id_value = as.numeric(row_key),
     show_old = as.logical(show_old)
   )
 }
