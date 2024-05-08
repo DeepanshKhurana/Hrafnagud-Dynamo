@@ -15,6 +15,12 @@ I especially want you to take the DynamoDb CRUD API and see what you can build f
 
 ![Hrafnagud](Hrafnagud-Diagram.png)
 
+## Apps (Preview)
+
+The code for these apps is not available here but this preview is to show that Shiny is a perfectly good framework to use an API like Hrafnagud and craft wonderful looking apps.
+
+<img width="1440" alt="apps" src="https://github.com/DeepanshKhurana/Hrafnagud-Dynamo/assets/26517718/d974feb4-7033-4766-9131-b0e25e970582">
+
 ## Full Story
 
 Over a year ago, I saw a problem. I wanted to track my financial growth, how everything was performing, what was my total networth across instruments, but all apps I saw were bloated at best and would surely sell my information at worst. So, I set out to understand financial calculations and metrics, became an expert in it overnight (haha!) and built myself an app called Ebenezer (named for Ebenezer Scrooge).
