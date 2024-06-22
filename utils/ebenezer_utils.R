@@ -587,8 +587,8 @@ summarise_mmtc <- function(
     mmtc_price
   )
   list(
-    "invested" = mmtc_data$total_invested,
-    "current" = mmtc_data$current_price
+    "invested" = as.numeric(mmtc_data$total_invested),
+    "current" = as.numeric(mmtc_data$current_price)
   )
 }
 

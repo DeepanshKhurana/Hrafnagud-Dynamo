@@ -18,9 +18,11 @@ get_mmtc_price <- function(
 ) {
   tryCatch({
     html <- read_html(web_link)
+    sell_price <- as.numeric(html_text(html_node(html, "#sellGoldPrice")))
+    buy_price <- as.numeric(html_text(html_node(html, "#goldPrice")))
     list(
-      "sell" = as.numeric(html_text(html_node(html, "#sellGoldPrice"))),
-      "buy" = as.numeric(html_text(html_node(html, "#goldPrice")))
+      "sell" = ifelse(is.na(sell_price), 0, sell_price),
+      "buy" = ifelse(is.na(buy_price), 0, buy_price)
     )
   },
   error = function(e) {
