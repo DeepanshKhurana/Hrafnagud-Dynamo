@@ -20,4 +20,8 @@ default:
       url: "https://outlook.live.com/owa/calendar/3d44f7fd-ceea-472d-a467-6ee5d1b22c3a/373d7e9d-5640-456a-a9da-e3b8db09e432/cid-772C18C17017F5CC/calendar.ics"
       tz: "Asia/Calcutta"
       priority: 2
+    social:
+      url: "https://calendar.google.com/calendar/ical/397e57d65b4f019eb0c910041faf875893e98a60a88533020de5ce693079455c%40group.calendar.google.com/private-5151c61b874efc8b189d2e56b8dc5d24/basic.ics"
+      tz: "Asia/Calcutta"
+      priority: 3
 
