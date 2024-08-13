@@ -37,7 +37,7 @@ box::use(
 #' @param date A date object.
 #' @return Abbreviated weekday name in uppercase.
 get_parsed_weekday <- function(
-    date
+  date
 ) {
   weekdays(date, abbreviate = TRUE) |>
     substr(start = 1, stop = 2) |>
