@@ -18,6 +18,7 @@ box::use(
     ungroup
   ],
   purrr[
+    map,
     map2
   ],
   ical[
@@ -25,6 +26,9 @@ box::use(
   ],
   tidyr[
     separate_rows
+  ],
+  utils[
+    download.file
   ],
 )
 
