@@ -200,6 +200,16 @@
       ],
       "Hash": "c089a619a7fae175d149d89164f8c7d8"
     },
+    "config": {
+      "Package": "config",
+      "Version": "0.3.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "yaml"
+      ],
+      "Hash": "8b7222e9d9eb5178eea545c0c4d33fc2"
+    },
     "cpp11": {
       "Package": "cpp11",
       "Version": "0.4.7",
@@ -516,13 +526,18 @@
     },
     "ical": {
       "Package": "ical",
-      "Version": "0.1.6",
-      "Source": "Repository",
-      "Repository": "CRAN",
+      "Version": "0.3.0",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "petermeissner",
+      "RemoteRepo": "ical",
+      "RemoteRef": "master",
+      "RemoteSha": "f89d3cb386bedaff4b84a354226f8be44ef77577",
       "Requirements": [
         "V8"
       ],
-      "Hash": "02ec7331821a6b4896e57920b5b0358e"
+      "Hash": "0afcc749f98ce6f6dcd5590d83aa7094"
     },
     "ids": {
       "Package": "ids",
