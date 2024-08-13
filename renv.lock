@@ -88,6 +88,19 @@
       ],
       "Hash": "5ea2700d21e038ace58269ecdbeb9ec0"
     },
+    "V8": {
+      "Package": "V8",
+      "Version": "4.4.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "Rcpp",
+        "curl",
+        "jsonlite",
+        "utils"
+      ],
+      "Hash": "ca98390ad1cef2a5a609597b49d3d042"
+    },
     "askpass": {
       "Package": "askpass",
       "Version": "1.2.0",
@@ -500,6 +513,16 @@
         "withr"
       ],
       "Hash": "e2b30f1fc039a0bab047dd52bb20ef71"
+    },
+    "ical": {
+      "Package": "ical",
+      "Version": "0.1.6",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "V8"
+      ],
+      "Hash": "02ec7331821a6b4896e57920b5b0358e"
     },
     "ids": {
       "Package": "ids",

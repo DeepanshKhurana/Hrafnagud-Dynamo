@@ -511,7 +511,7 @@ process_deposits <- function(
 #' @param deposits_data the deposits data being fetched from the API
 #' @export
 summarise_deposits <- function(
-    deposits_data
+  deposits_data
 ) {
   deposits_data <- process_deposits(deposits_data)
   list(
@@ -579,8 +579,8 @@ process_mmtc <- function(
 #' @param mmtc_price the Midas price list for buy and sell for MMTC
 #' @export
 summarise_mmtc <- function(
-    mmtc_data,
-    mmtc_price
+  mmtc_data,
+  mmtc_price
 ) {
   mmtc_data <- process_mmtc(
     mmtc_data,

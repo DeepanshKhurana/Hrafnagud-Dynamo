@@ -1,0 +1,27 @@
+default:
+  calendars:
+    appsilon:
+      url: "https://calendar.google.com/calendar/ical/deepansh.khurana%40appsilon.com/private-f7d23963a83e004427e6692717b8a800/basic.ics"
+      tz: "Europe/Warsaw"
+      priority: 1
+    personal:
+      url: "https://calendar.google.com/calendar/ical/drifter2410%40gmail.com/private-83839459aa8905304bda084c28ed3f60/basic.ics"
+      tz: "Asia/Calcutta"
+      priority: 2
+    partner:
+      url: "https://calendar.google.com/calendar/ical/6f4bb85efb9bbab69689e738b4ca566e74640d83eaa79366c0cec067da1d5638%40group.calendar.google.com/private-ccb867b215db61c0bf49e20ffc809467/basic.ics"
+      tz: "Asia/Calcutta"
+      priority: 1
+    guests:
+      url: "https://calendar.google.com/calendar/ical/0ccdfaa244f02c5199c0376ad769e7fb0b1ec44787d75b8af1b1e241d4daba89%40group.calendar.google.com/private-1fa1d92ee26da1788ea14838d9e755df/basic.ics"
+      tz: "Asia/Calcutta"
+      priority: 2
+    outlook:
+      url: "https://outlook.live.com/owa/calendar/3d44f7fd-ceea-472d-a467-6ee5d1b22c3a/373d7e9d-5640-456a-a9da-e3b8db09e432/cid-772C18C17017F5CC/calendar.ics"
+      tz: "Asia/Calcutta"
+      priority: 2
+    social:
+      url: "https://calendar.google.com/calendar/ical/397e57d65b4f019eb0c910041faf875893e98a60a88533020de5ce693079455c%40group.calendar.google.com/private-5151c61b874efc8b189d2e56b8dc5d24/basic.ics"
+      tz: "Asia/Calcutta"
+      priority: 3
+
