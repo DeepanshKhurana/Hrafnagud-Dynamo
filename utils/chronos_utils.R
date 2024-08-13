@@ -28,68 +28,37 @@ box::use(
   ],
 )
 
-download_calendars <- function(
-  calendars = get("calendars")
+#' Get abbreviated weekday name.
+#'
+#' @param date A date object.
+#' @return Abbreviated weekday name in uppercase.
+get_parsed_weekday <- function(
+    date
 ) {
-  labels <- names(calendars)
-  filenames <- map2(
-    .x = calendars,
-    .y = labels,
-    .f = function(calendar, label) {
-      filename <- tempfile(fileext = ".ics")
-      download.file(
-        calendar$url,
-        destfile = filename
-      )
-      list(
-        "filename" = filename,
-        "label" = toupper(label),
-        "priority" = calendar$priority
-      )
-    }
-  )
-  filenames
+  weekdays(date, abbreviate = TRUE) |>
+    substr(start = 1, stop = 2) |>
+    toupper()
 }
 
-#' @export
-get_combined_calendars <- function(
-  calendars = get("calendars")
+#' Calculate day difference between two weekdays.
+#'
+#' @param from A weekday abbreviation.
+#' @param to A weekday abbreviation.
+#' @param days A vector of weekday abbreviations.
+#' @return The number of days between the two weekdays.
+get_day_difference <- function(
+  from,
+  to,
+  days = c("MO", "TU", "WE", "TH", "FR", "SA", "SU")
 ) {
-  calendars <- download_calendars(calendars)
-  calendars <- map(
-    .x = calendars,
-    .f = function(calendar) {
-      ical_parse_df(calendar$filename) |>
-        combine_calendar_df() |>
-        mutate(
-          label = calendar$label,
-          priority = calendar$priority
-        )
-    }
-  ) |>
-    bind_rows() |>
-    arrange(
-      status
-    )
-
-  calendars |>
-    group_by(summary) |>
-    slice_min(
-      order_by = priority,
-      with_ties = TRUE
-    ) |>
-    ungroup() |>
-    distinct() |>
-    arrange(status) |>
-    select(
-      -c(
-        priority,
-        start
-      )
-    ) |>
-    data.frame()
+  (match(from, days) - match(to, days)) %% 7
 }
 
+#' Process calendar data frame.
+#'
+#' @param calendar_df A data frame with calendar events.
+#' @param to_ignore A vector of event types to ignore.
+#' @return A processed data frame with status labels.
 process_calendar_df <- function(
   calendar_df,
   to_ignore = c(
@@ -115,6 +84,37 @@ process_calendar_df <- function(
     filter(!is.na(status))
 }
 
+#' Process weekly repeating events in calendar data.
+#'
+#' @param calendar_df A data frame with calendar events.
+#' @return A data frame of weekly repeating events.
+process_weekly_repetition <- function(
+  calendar_df
+) {
+  calendar_df |>
+    filter(
+      rrule_freq == "WEEKLY",
+      class == "PRIVATE"
+    ) |>
+    separate_rows(rrule_byday, sep = ",") |>
+    mutate(
+      rrule_byday = trimws(rrule_byday),
+      start = Sys.Date(),
+      weekday = get_parsed_weekday(start),
+      day_diff = get_day_difference(rrule_byday, weekday),
+      status = case_when(
+        day_diff == 0 ~ "TODAY",
+        day_diff == 1 ~ "TOMORROW",
+        TRUE ~ NA_character_
+      )
+    ) |>
+    filter(!is.na(status))
+}
+
+#' Combine calendar data frames, including weekly repetitions.
+#'
+#' @param calendar_df A data frame with calendar events.
+#' @return A combined and filtered data frame of calendar events.
 combine_calendar_df <- function(
   calendar_df
 ) {
@@ -138,67 +138,62 @@ combine_calendar_df <- function(
       status
     ) |>
     distinct() |>
-    arrange(
-      status
-    )
+    arrange(status)
 }
 
-get_parsed_weekday <- function(
-  date
+#' Download calendar files from URLs.
+#'
+#' @param calendars A list of calendar objects with URLs and priorities.
+#' @return A list of calendar files with labels and priorities.
+download_calendars <- function(
+  calendars = get("calendars")
 ) {
-  weekdays(
-    date,
-    abbreviate = TRUE
-  ) |>
-    substr(
-      start = 1,
-      stop = 2
-    ) |>
-    toupper()
-}
-
-process_weekly_repetition <- function(
-  calendar_df
-) {
-  calendar_df |>
-    filter(
-      rrule_freq == "WEEKLY",
-      class == "PRIVATE"
-    ) |>
-    separate_rows(
-      rrule_byday,
-      sep = ","
-    ) |>
-    mutate(
-      rrule_byday = trimws(rrule_byday),
-      start = Sys.Date(),
-      weekday = get_parsed_weekday(start),
-      day_diff = get_day_difference(rrule_byday, weekday),
-      status = case_when(
-        day_diff == 0 ~ "TODAY",
-        day_diff == 1 ~ "TOMORROW",
-        TRUE ~ NA_character_
+  labels <- names(calendars)
+  map2(
+    .x = calendars,
+    .y = labels,
+    .f = function(calendar, label) {
+      filename <- tempfile(fileext = ".ics")
+      download.file(calendar$url, destfile = filename)
+      list(
+        filename = filename,
+        label = toupper(label),
+        priority = calendar$priority
       )
-    ) |>
-    filter(!is.na(status))
-}
-
-get_day_difference <- function(
-  from,
-  to,
-  days = c(
-    "MO",
-    "TU",
-    "WE",
-    "TH",
-    "FR",
-    "SA",
-    "SU"
+    }
   )
-) {
-  from_ix <- match(from, days)
-  to_ix <- match(to, days)
-  (match(from, days) - match(to, days)) %% 7
 }
 
-calendars <- get_combined_calendars()
+#' Combine and process calendar data.
+#'
+#' @param calendars A list of calendar objects with URLs and priorities.
+#' @return A combined data frame of calendar events.
+#' @export
+get_combined_calendars <- function(
+  calendars = get("calendars")
+) {
+  calendars <- download_calendars(calendars)
+  calendars <- map(
+    .x = calendars,
+    .f = function(calendar) {
+      ical_parse_df(calendar$filename) |>
+        combine_calendar_df() |>
+        mutate(
+          label = calendar$label,
+          priority = calendar$priority
+        )
+    }
+  ) |>
+    bind_rows() |>
+    arrange(status) |>
+    group_by(summary) |>
+    slice_min(
+      order_by = priority,
+      with_ties = TRUE
+    ) |>
+    ungroup() |>
+    distinct() |>
+    arrange(status) |>
+    select(-c(priority, start)) |>
+    data.frame()
+}
