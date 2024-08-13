@@ -19,24 +19,24 @@ box::use(
 )
 
 box::use(
-`Hrafnagud-Dynamo`/utils/crud_utils[
-  # utils/crud_utils[
+`Hrafnagud-Dynamo`/utils/crud_utils[ # nolint
+  # utils/crud_utils[ # nolint
     get_processed_table_data,
     get_table_schema,
     put_table_row,
     delete_table_row
   ],
-`Hrafnagud-Dynamo`/utils/robin_utils[
- # utils/robin_utils[
+`Hrafnagud-Dynamo`/utils/robin_utils[ # nolint
+ # utils/robin_utils[ # nolint
     load_sheet
   ],
-`Hrafnagud-Dynamo`/utils/midas_utils[
- # utils/midas_utils[
+`Hrafnagud-Dynamo`/utils/midas_utils[ # nolint
+ # utils/midas_utils[ # nolint
     get_mmtc_price,
     get_bullions_price
   ],
-`Hrafnagud-Dynamo`/utils/ebenezer_utils[
- # utils/ebenezer_utils[
+`Hrafnagud-Dynamo`/utils/ebenezer_utils[ # nolint
+ # utils/ebenezer_utils[ # nolint
     calculate_portfolio,
     summarise_portfolio,
     calculate_funds,
@@ -46,8 +46,8 @@ box::use(
     summarise_mmtc,
     summarise_sgbs
   ],
-`Hrafnagud-Dynamo`/utils/chronos_utils[
-# utils/chronos_utils[
+`Hrafnagud-Dynamo`/utils/chronos_utils[ # nolint
+# utils/chronos_utils[ # nolint # nolint
     get_combined_calendars
   ],
 )
@@ -766,5 +766,3 @@ function(
 }
 
 ## Fogg ----
-
-
