@@ -16,30 +16,27 @@ box::use(
   tidyr[
     complete
   ],
-  purrr[
-    map_dbl
-  ]
 )
 
 box::use(
-`Hrafnagud-Dynamo`/utils/crud_utils[
-#  utils/crud_utils[
+`Hrafnagud-Dynamo`/utils/crud_utils[ # nolint
+  # utils/crud_utils[ # nolint
     get_processed_table_data,
     get_table_schema,
     put_table_row,
     delete_table_row
   ],
-`Hrafnagud-Dynamo`/utils/robin_utils[
-#  utils/robin_utils[
+`Hrafnagud-Dynamo`/utils/robin_utils[ # nolint
+ # utils/robin_utils[ # nolint
     load_sheet
   ],
-`Hrafnagud-Dynamo`/utils/midas_utils[
-#  utils/midas_utils[
+`Hrafnagud-Dynamo`/utils/midas_utils[ # nolint
+ # utils/midas_utils[ # nolint
     get_mmtc_price,
     get_bullions_price
   ],
-`Hrafnagud-Dynamo`/utils/ebenezer_utils[
-#  utils/ebenezer_utils[
+`Hrafnagud-Dynamo`/utils/ebenezer_utils[ # nolint
+ # utils/ebenezer_utils[ # nolint
     calculate_portfolio,
     summarise_portfolio,
     calculate_funds,
@@ -48,7 +45,11 @@ box::use(
     summarise_savings,
     summarise_mmtc,
     summarise_sgbs
-  ]
+  ],
+`Hrafnagud-Dynamo`/utils/chronos_utils[ # nolint
+# utils/chronos_utils[ # nolint # nolint
+    get_combined_calendars
+  ],
 )
 
 # Helper ----
@@ -86,6 +87,7 @@ auth_helper <- function(
 #* @apiTag Livingston Trip-related Endpoints
 #* @apiTag Ebenezer Finance-related Endpoints
 #* @apiTag Fogg Todoist Task-related Endpoints
+#* @apiTag Chronos Google Calendar-related Endpoints
 
 ## CRUD ----
 
@@ -746,3 +748,21 @@ function(
 
   c(list("networth" = totals), networth)
 }
+
+## Chronos ----
+
+#* Events
+#* @get /chronos/events
+#* @tag Chronos
+function(
+  res,
+  req
+) {
+  auth_helper(
+    res,
+    req,
+    get_combined_calendars
+  )
+}
+
+## Fogg ----
