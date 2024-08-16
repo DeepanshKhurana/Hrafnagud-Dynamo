@@ -2,10 +2,14 @@ box::use(
   dplyr[
     arrange,
     bind_rows,
+    coalesce,
     group_by,
+    left_join,
     mutate,
     n,
+    pull,
     rename_with,
+    select,
     summarise,
     ungroup
   ],
@@ -197,71 +201,82 @@ get_tasks_summary <- function(
 #' Take the summary and calculate a score according to baseline
 #'
 #' @param task_summary A data.frame summary fetched from get_tasks_summary()
-#' @param baseline_score A numeric baseline for the score. Default is 5
-#' @param ideal_distribution A named list of ideal distribution of tasks
+#' @param ideal_tasks_distribution A named list of ideal distribution of tasks
 #' @return A list with the following components:
-#'   task_summary: The input task summary
-#'   score: A numeric score based on the actual task distribution
-#'   baseline: The provided baseline score
-#'   difference: The difference between the baseline and the actual
-#'   skew: The average difference between ideal and actual counts
-#'   recommendation: A string recommendation based on skew:
-#'     - "Worse" if skew > 0,
-#'     - "Better" if skew < 0,
-#'     - "Ideal" if skew == 0
+#'   score: The difference between ideal and actual task score
+#'   recommendation: A string recommendation based on score:
+#'     - "Worse" if score > 0,
+#'     - "Better" if score < 0,
+#'     - "Ideal" if score == 0
 #' @export
 get_tasks_analysis <- function(
   task_summary = get_tasks_summary(),
-  baseline_score = 5,
-  ideal_distribution = list(
-    "1" = 8,
-    "2" = 7,
+  ideal_tasks_distribution = list(
+    "1" = 6,
+    "2" = 5,
     "3" = 4,
     "4" = 3,
     "5" = 2
   )
 ) {
-  actual_score <- sum(task_summary$intensity * task_summary$count * 0.1)
-  total_tasks <- sum(task_summary$count)
-  total_ideal <- sum(unlist(ideal_distribution))
+  score <- cbind(
+      data.frame(
+        intensity = 1:5,
+        count = 0
+      ) |>
+        left_join(
+          task_summary,
+          by = "intensity"
+        ) |>
+        mutate(
+          count = coalesce(
+            count.y,
+            count.x
+          )
+        ) |>
+        select(
+          intensity,
+          count = count
+        ),
+      data.frame(
+        ideal_count = unlist(ideal_tasks_distribution)
+      )
+    ) |>
+    mutate(
+      ideal_score = intensity * ideal_count * 0.1,
+      score = intensity * count * 0.1
+    ) |>
+    summarise(
+      score = sum(score - ideal_score)
+    ) |>
+    pull()
 
-  # Adjust ideal distribution
-  adjusted_ideal_distribution <- map2(
-    ideal_distribution,
-    names(ideal_distribution),
-    ~ .x * (total_tasks / total_ideal)
+  c(
+    list(
+      "score" = score
+    ),
+    get_recommendation(score)
   )
+}
 
-  ideal_counts <- map_dbl(
-    names(adjusted_ideal_distribution),
-    ~ adjusted_ideal_distribution[[.x]]
-  )
-
-  actual_counts <- map_dbl(
-    names(adjusted_ideal_distribution),
-    ~ if (.x %in% task_summary$intensity) {
-      task_summary$count[task_summary$intensity == as.numeric(.x)]
-    } else {
-      0
-    }
-  )
-
-  skew <- mean(ideal_counts - actual_counts)
-
-  recommendation <- if (skew > 0) {
-    "Worse"
-  } else if (skew < 0) {
-    "Better"
-  } else {
-    "Ideal"
+#' @param score the score calculated inside get_tasks_analysis()
+#' @return A list with the following components:
+#' a numeric value of 1 to 5 representing the recommendation
+#' a string recommendation
+get_recommendation <- function(
+  score
+) {
+  if (score <= -1.5) {
+    recommendation <- list(1, "Worse")
+  } else if (score > -1.5 && score < 0) {
+    recommendation <- list(2, "Bad")
+  } else if (score == 0) {
+    recommendation <- list(3, "Ideal")
+  } else if (score > 0 && score <= 1.5) {
+    recommendation <- list(4, "Good")
+  } else if (score > 1.5) {
+    recommendation <- list(5, "Better")
   }
-
-  list(
-    "task_summary" = task_summary,
-    "score" = actual_score,
-    "baseline" = baseline_score,
-    "difference" = baseline_score - actual_score,
-    "skew" = skew,
-    "recommendation" = recommendation
-  )
+  names(recommendation) <- c("recommendation_number", "recommendation_verbose")
+  recommendation
 }
