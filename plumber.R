@@ -47,8 +47,13 @@ box::use(
     summarise_sgbs
   ],
 `Hrafnagud-Dynamo`/utils/chronos_utils[ # nolint
-# utils/chronos_utils[ # nolint # nolint
+# utils/chronos_utils[ # nolint
     get_combined_calendars
+  ],
+`Hrafnagud-Dynamo`/utils/fogg_utils[ # nolint
+# utils/fogg_utils[ # nolint
+    get_labelled_tasks_df,
+    get_tasks_analysis
   ],
 )
 
@@ -766,3 +771,31 @@ function(
 }
 
 ## Fogg ----
+
+#* Today's Tasks
+#* @get /fogg/tasks
+#* @tag Fogg
+function(
+  res,
+  req
+) {
+  auth_helper(
+    res,
+    req,
+    get_labelled_tasks_df
+  )
+}
+
+#* Today's Task Analysis
+#* @get /fogg/analysis
+#* @tag Fogg
+function(
+  res,
+  req
+) {
+  auth_helper(
+    res,
+    req,
+    get_tasks_analysis
+  )
+}
