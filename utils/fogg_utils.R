@@ -219,25 +219,27 @@ get_tasks_analysis <- function(
     "5" = 2
   )
 ) {
+  task_summary <- data.frame(
+    intensity = 1:5,
+    count = 0
+  ) |>
+    left_join(
+      task_summary,
+      by = "intensity"
+    ) |>
+    mutate(
+      count = coalesce(
+        count.y,
+        count.x
+      )
+    ) |>
+    select(
+      intensity,
+      count = count
+    )
+
   score <- cbind(
-      data.frame(
-        intensity = 1:5,
-        count = 0
-      ) |>
-        left_join(
-          task_summary,
-          by = "intensity"
-        ) |>
-        mutate(
-          count = coalesce(
-            count.y,
-            count.x
-          )
-        ) |>
-        select(
-          intensity,
-          count = count
-        ),
+      task_summary,
       data.frame(
         ideal_count = unlist(ideal_tasks_distribution)
       )
@@ -253,6 +255,7 @@ get_tasks_analysis <- function(
 
   c(
     list(
+      "summary" = task_summary,
       "score" = score
     ),
     get_recommendation(score)
