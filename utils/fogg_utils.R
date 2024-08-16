@@ -132,8 +132,9 @@ flatten_task <- function(nested_list) {
 process_task <- function(task) {
   task <- map(
     task,
-    ~ if (is.null(.)) {
-      NA
+    ~
+      if (is.null(.)) {
+        NA
       } else {
         .
       }
