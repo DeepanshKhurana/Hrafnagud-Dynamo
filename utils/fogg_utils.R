@@ -260,22 +260,24 @@ get_tasks_analysis <- function(
 }
 
 #' @param score the score calculated inside get_tasks_analysis()
+#' @param factor the factor to be used to calculate the recommendation
 #' @return A list with the following components:
 #' a numeric value of 1 to 5 representing the recommendation
 #' a string recommendation
 get_recommendation <- function(
-  score
+  score,
+  factor = 2.5
 ) {
-  if (score <= -1.5) {
-    recommendation <- list(1, "Worse")
-  } else if (score > -1.5 && score < 0) {
-    recommendation <- list(2, "Bad")
+  if (score <= -1 * factor) {
+    recommendation <- list(5, "Better")
+  } else if (score > -1 * factor && score < 0) {
+    recommendation <- list(4, "Good")
   } else if (score == 0) {
     recommendation <- list(3, "Ideal")
-  } else if (score > 0 && score <= 1.5) {
-    recommendation <- list(4, "Good")
-  } else if (score > 1.5) {
-    recommendation <- list(5, "Better")
+  } else if (score > 0 && score <= factor) {
+    recommendation <- list(2, "Bad")
+  } else if (score > factor) {
+    recommendation <- list(1, "Worse")
   }
   names(recommendation) <- c("recommendation_number", "recommendation_verbose")
   recommendation
