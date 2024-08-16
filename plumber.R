@@ -19,24 +19,24 @@ box::use(
 )
 
 box::use(
-`Hrafnagud-Dynamo`/utils/crud_utils[ # nolint
-  # utils/crud_utils[ # nolint
+# `Hrafnagud-Dynamo`/utils/crud_utils[ # nolint
+  utils/crud_utils[ # nolint
     get_processed_table_data,
     get_table_schema,
     put_table_row,
     delete_table_row
   ],
-`Hrafnagud-Dynamo`/utils/robin_utils[ # nolint
- # utils/robin_utils[ # nolint
+# `Hrafnagud-Dynamo`/utils/robin_utils[ # nolint
+ utils/robin_utils[ # nolint
     load_sheet
   ],
-`Hrafnagud-Dynamo`/utils/midas_utils[ # nolint
- # utils/midas_utils[ # nolint
+# `Hrafnagud-Dynamo`/utils/midas_utils[ # nolint
+ utils/midas_utils[ # nolint
     get_mmtc_price,
     get_bullions_price
   ],
-`Hrafnagud-Dynamo`/utils/ebenezer_utils[ # nolint
- # utils/ebenezer_utils[ # nolint
+# `Hrafnagud-Dynamo`/utils/ebenezer_utils[ # nolint
+ utils/ebenezer_utils[ # nolint
     calculate_portfolio,
     summarise_portfolio,
     calculate_funds,
@@ -46,9 +46,14 @@ box::use(
     summarise_mmtc,
     summarise_sgbs
   ],
-`Hrafnagud-Dynamo`/utils/chronos_utils[ # nolint
-# utils/chronos_utils[ # nolint # nolint
+# `Hrafnagud-Dynamo`/utils/chronos_utils[ # nolint
+utils/chronos_utils[ # nolint
     get_combined_calendars
+  ],
+# `Hrafnagud-Dynamo`/utils/fogg_utils[ # nolint
+utils/fogg_utils[ # nolint
+    get_labelled_tasks_df,
+    get_tasks_analysis
   ],
 )
 
@@ -766,3 +771,31 @@ function(
 }
 
 ## Fogg ----
+
+#* Today's Tasks
+#* @get /fogg/tasks
+#* @tag Fogg
+function(
+  res,
+  req
+) {
+  auth_helper(
+    res,
+    req,
+    get_labelled_tasks_df
+  )
+}
+
+#* Today's Task Analysis
+#* @get /fogg/analysis
+#* @tag Fogg
+function(
+  res,
+  req
+) {
+  auth_helper(
+    res,
+    req,
+    get_tasks_analysis
+  )
+}
