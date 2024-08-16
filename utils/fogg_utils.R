@@ -219,6 +219,7 @@ get_tasks_analysis <- function(
     "5" = 2
   )
 ) {
+
   task_summary <- data.frame(
     intensity = 1:5,
     count = 0
@@ -238,6 +239,8 @@ get_tasks_analysis <- function(
       count = count
     )
 
+  total_tasks <- sum(task_summary$count)
+
   score <- cbind(
       task_summary,
       data.frame(
@@ -256,6 +259,9 @@ get_tasks_analysis <- function(
   c(
     list(
       "summary" = task_summary,
+      "total_tasks" = total_tasks,
+      "mean_intensity" = (task_summary$intensity * task_summary$count) |>
+        sum() / total_tasks,
       "score" = score
     ),
     get_recommendation(score)
