@@ -158,13 +158,18 @@ process_task <- function(task) {
 #' @return A tibble of labelled tasks.
 #' @export
 get_labelled_tasks_df <- function() {
-  get_labelled_tasks() |>
-    map(process_task) |>
-    bind_rows(.id = "id") |>
-    data.frame() |>
+  tasks <- get_labelled_tasks()
+  if (length(tasks) > 0) {
+   tasks |>
+      map(process_task) |>
+      bind_rows(.id = "id") |>
+      data.frame()
     rename_with(
       ~ "intensity", starts_with("labels")
     )
+  } else {
+    data.frame()
+  }
 }
 
 #' Get task summary
@@ -176,24 +181,28 @@ get_labelled_tasks_df <- function() {
 get_tasks_summary <- function(
   tasks = get_labelled_tasks_df()
 ) {
-  tasks |>
-    group_by(intensity) |>
-    summarise(
-      count = n()
-    ) |>
-    ungroup() |>
-    arrange(intensity) |>
-    mutate(
-      intensity = gsub(
-        "Intensity:",
-        "",
-        .data$intensity
+  if (nrow(tasks) > 0) {
+    tasks |>
+      group_by(intensity) |>
+      summarise(
+        count = n()
       ) |>
-        as.numeric(),
-      count = count |>
-        as.numeric()
-    ) |>
+      ungroup() |>
+      arrange(intensity) |>
+      mutate(
+        intensity = gsub(
+          "Intensity:",
+          "",
+          .data$intensity
+        ) |>
+          as.numeric(),
+        count = count |>
+          as.numeric()
+      ) |>
+      data.frame()
+  } else {
     data.frame()
+  }
 }
 
 #' Get task score
@@ -219,53 +228,56 @@ get_tasks_analysis <- function(
     "5" = 2
   )
 ) {
-
-  task_summary <- data.frame(
-    intensity = 1:5,
-    count = 0
-  ) |>
-    left_join(
-      task_summary,
-      by = "intensity"
+  if (nrow(task_summary) > 0) {
+    task_summary <- data.frame(
+      intensity = 1:5,
+      count = 0
     ) |>
-    mutate(
-      count = coalesce(
-        count.y,
-        count.x
+      left_join(
+        task_summary,
+        by = "intensity"
+      ) |>
+      mutate(
+        count = coalesce(
+          count.y,
+          count.x
+        )
+      ) |>
+      select(
+        intensity,
+        count = count
       )
-    ) |>
-    select(
-      intensity,
-      count = count
-    )
 
-  total_tasks <- sum(task_summary$count)
+    total_tasks <- sum(task_summary$count)
 
-  score <- cbind(
+    score <- cbind(
       task_summary,
       data.frame(
         ideal_count = unlist(ideal_tasks_distribution)
       )
     ) |>
-    mutate(
-      ideal_score = intensity * ideal_count * 0.1,
-      score = intensity * count * 0.1
-    ) |>
-    summarise(
-      score = sum(score - ideal_score)
-    ) |>
-    pull()
+      mutate(
+        ideal_score = intensity * ideal_count * 0.1,
+        score = intensity * count * 0.1
+      ) |>
+      summarise(
+        score = sum(score - ideal_score)
+      ) |>
+      pull()
 
-  c(
-    list(
-      "summary" = task_summary,
-      "total_tasks" = total_tasks,
-      "mean_intensity" = (task_summary$intensity * task_summary$count) |>
-        sum() / total_tasks,
-      "score" = score
-    ),
-    get_recommendation(score)
-  )
+    c(
+      list(
+        "summary" = task_summary,
+        "total_tasks" = total_tasks,
+        "mean_intensity" = (task_summary$intensity * task_summary$count) |>
+          sum() / total_tasks,
+        "score" = score
+      ),
+      get_recommendation(score)
+    )
+  } else {
+    list()
+  }
 }
 
 #' @param score the score calculated inside get_tasks_analysis()
