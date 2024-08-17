@@ -160,13 +160,14 @@ process_task <- function(task) {
 get_labelled_tasks_df <- function() {
   tasks <- get_labelled_tasks()
   if (length(tasks) > 0) {
-   tasks |>
+    tasks |>
       map(process_task) |>
       bind_rows(.id = "id") |>
-      data.frame()
-    rename_with(
-      ~ "intensity", starts_with("labels")
-    )
+      data.frame() |>
+      rename_with(
+        ~ "intensity",
+        starts_with("labels")
+      )
   } else {
     data.frame()
   }
