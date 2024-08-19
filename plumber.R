@@ -16,6 +16,9 @@ box::use(
   tidyr[
     complete
   ],
+  memoise[
+    memoise
+  ],
 )
 
 box::use(
@@ -78,7 +81,10 @@ auth_helper <- function(
     res$status <- 401
     return("Missing or invalid API key, or invalid configuration!")
   } else {
-    FUN(...) #nolint: object_name_linter
+    memoised <- memoise(FUN) #nolint: object_name_linter
+    memoised(
+      ...
+    )
   }
 }
 
