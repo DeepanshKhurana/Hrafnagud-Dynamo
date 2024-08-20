@@ -191,6 +191,9 @@ get_combined_calendars <- function(
     bind_rows() |>
     arrange(status) |>
     group_by(summary) |>
+    mutate(
+      summary = gsub("Deepansh's ", "", summary)
+    ) |>
     slice_min(
       order_by = priority,
       with_ties = TRUE
