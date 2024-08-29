@@ -762,6 +762,8 @@ function(
 
 ## Chronos ----
 
+### Events ----
+
 #* Events
 #* @get /chronos/events
 #* @tag Chronos
@@ -778,6 +780,8 @@ function(
 
 ## Fogg ----
 
+### Today's Tasks ----
+
 #* Today's Tasks
 #* @get /fogg/tasks
 #* @tag Fogg
@@ -791,6 +795,8 @@ function(
     get_labelled_tasks_df
   )
 }
+
+### Today's Task Analysis ----
 
 #* Today's Task Analysis
 #* @get /fogg/analysis
