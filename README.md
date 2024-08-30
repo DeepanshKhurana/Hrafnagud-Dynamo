@@ -6,6 +6,8 @@ This needs AWS DynamoDb to work and thus, needs environment variables. However, 
 
 I especially want you to take the DynamoDb CRUD API and see what you can build from it.
 
+**Argus:** For a simple app that lets you use the CRUD API to perform operations, check out [Argus](https://github.com/DeepanshKhurana/Argus/tree/main).
+
 ## Wishlist of Potential Improvements
 
 - `widgets/` endpoints for each important table or piece of data to render things on the fly
