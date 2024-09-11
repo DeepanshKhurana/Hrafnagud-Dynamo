@@ -235,7 +235,6 @@ get_table_data <- function(
 #'
 #' @param table_name The name of the table.
 #' @param input_list A list of column-value pairs.
-#' @param show_old Whether to show old data (not used).
 #' @param is_update Whether the operation is an update.
 #' @param schema The schema name.
 #' @param conn A database connection object.
@@ -243,7 +242,6 @@ get_table_data <- function(
 put_table_row <- function(
   table_name = NULL,
   input_list = list(),
-  show_old = FALSE,
   is_update = FALSE,
   schema = "hrafnagud",
   conn = make_connection()
@@ -251,7 +249,6 @@ put_table_row <- function(
   assert(
     check_string(table_name),
     check_list(input_list),
-    check_logical(show_old),
     check_logical(is_update),
     combine = "and"
   )
@@ -307,7 +304,6 @@ put_table_row <- function(
 #' @param table_name The name of the table.
 #' @param id_value The ID value of the row to delete.
 #' @param id_column The ID column name.
-#' @param show_old Whether to show old data (not used).
 #' @param schema The schema name.
 #' @param conn A database connection object.
 #' @export
@@ -315,7 +311,6 @@ delete_table_row <- function(
   table_name = NULL,
   id_value = NULL,
   id_column = "id",
-  show_old = FALSE,
   schema = "hrafnagud",
   conn = make_connection()
 ) {
@@ -323,7 +318,6 @@ delete_table_row <- function(
     check_string(table_name),
     check_numeric(id_value),
     check_string(id_column),
-    check_logical(show_old),
     combine = "and"
   )
 
