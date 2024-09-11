@@ -25,12 +25,11 @@ box::use(
   ]
 )
 
-#' Helper function generate an error message
-generate_error <- function() {
-  print(
-    "Cannot connect to DynamoDb. Are environment variables set?"
-  )
-}
+box::use(
+  utils/global_utils[
+    generate_error
+  ]
+)
 
 #' Simple function to check if table name is valid
 #' @param table_name Character string. Table name to validate.
