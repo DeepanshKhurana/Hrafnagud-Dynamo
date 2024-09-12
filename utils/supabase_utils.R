@@ -245,12 +245,12 @@ get_table_data <- function(
 map_sql_to_r <- function(
   data_type,
   type_mapping = list(
-    "bigint" = "numeric",
-    "text" = "character",
-    "double precision" = "numeric",
-    "date" = "Date",
-    "timestamp with time zone" = "POSIXct",
-    "boolean" = "logical"
+    "bigint" = as.numeric,
+    "text" = as.character,
+    "double precision" = as.numeric,
+    "date" = as.Date,
+    "timestamp with time zone" = as.POSIXct,
+    "boolean" = as.logical
   )
 ) {
   matched_type <- type_mapping[[data_type]]
@@ -258,33 +258,6 @@ map_sql_to_r <- function(
     stop(glue("Unrecognized data type: {data_type}"))
   }
   matched_type
-}
-
-#' Validate input values against schema information
-#'
-#' @param input_list A list of input values to validate.
-#' @param schema_info A data frame containing schema information.
-#' @return NULL. Throws an error if validation fails.
-validate_input_types <- function(
-  input_list,
-  schema_info
-) {
-  column_names <- schema_info$column_name[seq_along(input_list)]
-  map2(
-    column_names,
-    input_list,
-    ~ {
-      expected_type <- map_sql_to_r(
-        schema_info$data_type[schema_info$column_name == .x]
-      )
-      assert(
-        check_class(
-          .y,
-          expected_type
-        )
-      )
-    }
-  )
 }
 
 #' Filter columns based on schema and operation type
@@ -325,8 +298,8 @@ put_table_row <- function(
   )
 
   if (is_valid_table(table_name, conn)) {
-    schema_info <- get_table_schema(table_name)
-    columns <- filter_columns(schema_info, is_update)
+    table_schema <- get_table_schema(table_name)
+    columns <- filter_columns(table_schema, is_update)
 
     if (!is_update) {
       input_list <- c(
@@ -341,7 +314,21 @@ put_table_row <- function(
 
     names(input_list) <- columns
 
-    validate_input_types(input_list, schema_info)
+    input_list <- lapply(
+      seq_along(input_list),
+      function(index) {
+        tryCatch(
+          expr = {
+            FUN <- map_sql_to_r(
+              table_schema$data_type[index] |>
+                unlist()
+            )
+            FUN(input_list[index]) |>
+              unname()
+          }
+        )
+      }
+    )
 
     values <- lapply(
       input_list,
