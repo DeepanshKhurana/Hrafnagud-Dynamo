@@ -12,7 +12,7 @@ box::use(
     select
   ],
   lubridate[
-    dmy,
+    ymd,
     month,
     year
   ],
@@ -309,8 +309,8 @@ function(
   current <- Sys.Date()
 
   data |>
-    mutate(start = dmy(start_date),
-           end = dmy(end_date)) |>
+    mutate(start = ymd(start_date),
+           end = ymd(end_date)) |>
     mutate(trip_status = case_when(
       end < current ~ "Past",
       start <= current & end >= current ~ "Ongoing",
