@@ -323,10 +323,19 @@ put_table_row <- function(
               table_schema$data_type[index] |>
                 unlist()
             )
-            FUN(
-              input_list[index] |>
-                as.character()
-            )
+            if (identical(FUN, as.Date)) {
+              FUN(
+                input_list[index] |>
+                  as.character(),
+                format = "%Y-%m-%d"
+              )
+            } else {
+              FUN(
+                input_list[index] |>
+                  as.character()
+              )
+            }
+
           }
         )
       }
