@@ -25,13 +25,22 @@ box::use(
   glue[
     glue
   ],
+  checkmate[
+    assert_subset
+  ],
 )
 
-database_utils = glue(
-  "{get('database_utils')}_utils"
+database_utils <- get("database_utils")
+
+assert_subset(
+  database_utils,
+  c(
+    "dynamodb",
+    "supabase"
+  )
 )
 
-if (database_utils == "supabase_utils") {
+if (database_utils == "supabase") {
   box::use(
     #`Hrafnagud-Dynamo`/utils/supabase_utils[ # nolint
       utils/supabase_utils[ # nolint
@@ -43,11 +52,11 @@ if (database_utils == "supabase_utils") {
   )
 }
 
-if (database_utils == "dynamo_utils") {
+if (database_utils == "dynamodb") {
   box::use(
     # `Hrafnagud-Dynamo`/utils/dynamo_utils[ # nolint
     utils/dynamo_utils[ # nolint
-      get_table_data = get_processed_table_data(),
+      get_table_data = get_processed_table_data,
       get_table_schema,
       put_table_row,
       delete_table_row

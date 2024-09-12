@@ -237,6 +237,11 @@ get_table_data <- function(
   }
 }
 
+#' Map SQL data types to R data types
+#'
+#' @param data_type SQL data type as a character string.
+#' @param type_mapping A named list mapping SQL data types to R data types.
+#' @return Corresponding R data type as a character string.
 map_sql_to_r <- function(
   data_type,
   type_mapping = list(
@@ -255,6 +260,11 @@ map_sql_to_r <- function(
   matched_type
 }
 
+#' Validate input values against schema information
+#'
+#' @param input_list A list of input values to validate.
+#' @param schema_info A data frame containing schema information.
+#' @return NULL. Throws an error if validation fails.
 validate_input_types <- function(
   input_list,
   schema_info
@@ -277,6 +287,11 @@ validate_input_types <- function(
   )
 }
 
+#' Filter columns based on schema and operation type
+#'
+#' @param schema_info A data frame containing schema information.
+#' @param is_update Logical indicating whether the operation is an update.
+#' @return A vector of column names to include.
 filter_columns <- function(
   schema_info,
   is_update = FALSE
@@ -295,11 +310,11 @@ filter_columns <- function(
 #' @param conn A database connection object.
 #' @export
 put_table_row <- function(
-    table_name = NULL,
-    input_list = list(),
-    is_update = FALSE,
-    schema = "hrafnagud",
-    conn = make_connection()
+  table_name = NULL,
+  input_list = list(),
+  is_update = FALSE,
+  schema = "hrafnagud",
+  conn = make_connection()
 ) {
   assert(
     check_string(table_name),
@@ -327,11 +342,24 @@ put_table_row <- function(
 
     validate_input_types(input_list, schema_info)
 
-    values <- lapply(input_list, function(x) dbQuoteLiteral(conn, x))
+    values <- lapply(
+      input_list,
+      function(x) dbQuoteLiteral(conn, x)
+    )
 
     if (is_update) {
       set_clause <- glue_sql_collapse(
-        mapply(function(col, val) glue_sql("{`col`} = {val}", .con = conn), names(input_list), values, SIMPLIFY = FALSE),
+        mapply(
+          function(col, val) {
+            glue_sql(
+              "{`col`} = {val}",
+              .con = conn
+            )
+          },
+          names(input_list),
+          values,
+          SIMPLIFY = FALSE
+        ),
         sep = ", "
       )
       query <- glue_sql(

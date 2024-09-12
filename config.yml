@@ -1,2 +1,2 @@
 default:
-  database_utils: "supabase"
+  database_utils: "dynamodb"
