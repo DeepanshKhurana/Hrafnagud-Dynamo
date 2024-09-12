@@ -6,6 +6,8 @@ This needs AWS DynamoDb to work and thus, needs environment variables. However, 
 
 I especially want you to take the DynamoDb CRUD API and see what you can build from it.
 
+**Argus:** For a simple app that lets you use the CRUD API to perform operations, check out [Argus](https://github.com/DeepanshKhurana/Argus/tree/main).
+
 ## Wishlist of Potential Improvements
 
 - `widgets/` endpoints for each important table or piece of data to render things on the fly
@@ -14,6 +16,12 @@ I especially want you to take the DynamoDb CRUD API and see what you can build f
 ## System-level Diagram
 
 ![Hrafnagud](Hrafnagud-Diagram.png)
+
+## Apps (Preview)
+
+The code for these apps is not available here but this preview is to show that Shiny is a perfectly good framework to use an API like Hrafnagud and craft wonderful looking apps.
+
+<img width="1440" alt="apps" src="https://github.com/DeepanshKhurana/Hrafnagud-Dynamo/assets/26517718/d974feb4-7033-4766-9131-b0e25e970582">
 
 ## Full Story
 
