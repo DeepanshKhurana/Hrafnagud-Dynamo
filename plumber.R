@@ -1,5 +1,8 @@
 box::use(
   plumber[...],
+  config[
+    get
+  ],
   dplyr[
     mutate,
     case_when,
@@ -18,8 +21,43 @@ box::use(
   ],
   purrr[
     map_dbl
-  ]
+  ],
+  checkmate[
+    assert_subset
+  ],
 )
+
+database_utils <- get("database_utils")
+
+assert_subset(
+  database_utils,
+  c(
+    "dynamodb",
+    "supabase"
+  )
+)
+
+if (database_utils == "supabase") {
+  box::use(
+    utils/supabase_utils[
+      get_table_data,
+      get_table_schema,
+      put_table_row,
+      delete_table_row
+    ],
+  )
+}
+
+if (database_utils == "dynamodb") {
+  box::use(
+    utils/dynamo_utils[
+      get_table_data = get_processed_table_data,
+      get_table_schema,
+      put_table_row,
+      delete_table_row
+    ],
+  )
+}
 
 box::use(
   utils/crud_utils[
