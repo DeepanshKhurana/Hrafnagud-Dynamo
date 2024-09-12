@@ -59,15 +59,6 @@ if (database_utils == "dynamodb") {
   )
 }
 
-box::use(
-  utils/crud_utils[
-    get_processed_table_data,
-    get_table_schema,
-    put_table_row,
-    delete_table_row
-  ]
-)
-
 # Helper ----
 
 #' Function to help with API Authentication
@@ -162,7 +153,7 @@ function(
   auth_helper(
     res,
     req,
-    get_processed_table_data,
+    get_table_data,
     table_name = table_name,
     limit = as.numeric(limit)
   )
@@ -173,7 +164,6 @@ function(
 #* Update row
 #* @param table_name:chr The table name to modify the row in.
 #* @param input_list:[chr] The list of values to add in the row.
-#* @param show_old:logical Show the last values of the row?
 #* @put /update
 #* @tag CRUD
 function(
@@ -181,7 +171,6 @@ function(
   req,
   table_name,
   input_list,
-  show_old
 ) {
   auth_helper(
     res,
@@ -189,7 +178,6 @@ function(
     put_table_row,
     table_name = table_name,
     input_list = as.list(input_list),
-    show_old = as.logical(show_old),
     is_update = TRUE
   )
 }
@@ -199,7 +187,6 @@ function(
 #* Delete row
 #* @param table_name:chr The table name to remove the row from.
 #* @param row_key:numeric The index of the row to delete.
-#* @param show_old:logical Show the last values of the row?
 #* @delete /delete
 #* @tag CRUD
 function(
@@ -207,14 +194,12 @@ function(
   req,
   table_name,
   row_key,
-  show_old
 ) {
   auth_helper(
     res,
     req,
     delete_table_row,
     table_name = table_name,
-    id_value = as.numeric(row_key),
-    show_old = as.logical(show_old)
+    id_value = as.numeric(row_key)
   )
 }
