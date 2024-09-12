@@ -316,6 +316,7 @@ put_table_row <- function(
   schema = "hrafnagud",
   conn = make_connection()
 ) {
+  on.exit(dbDisconnect(conn))
   assert(
     check_string(table_name),
     check_list(input_list),
@@ -398,6 +399,7 @@ delete_table_row <- function(
   schema = "hrafnagud",
   conn = make_connection()
 ) {
+  on.exit(dbDisconnect(conn))
   assert(
     check_string(table_name),
     check_numeric(id_value),
