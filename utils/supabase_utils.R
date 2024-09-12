@@ -323,8 +323,10 @@ put_table_row <- function(
               table_schema$data_type[index] |>
                 unlist()
             )
-            FUN(input_list[index]) |>
-              unname()
+            FUN(
+              input_list[index] |>
+                as.character()
+            )
           }
         )
       }
@@ -344,7 +346,7 @@ put_table_row <- function(
               .con = conn
             )
           },
-          names(input_list),
+          columns,
           values,
           SIMPLIFY = FALSE
         ),
@@ -353,7 +355,7 @@ put_table_row <- function(
       query <- glue_sql(
         "UPDATE {`schema`}.{`table_name`}
          SET {set_clause}
-         WHERE id = {input_list[['id']]}",
+         WHERE id = {input_list[[1]]}",
         .con = conn
       )
     } else {
