@@ -42,8 +42,8 @@ assert_subset(
 
 if (database_utils == "supabase") {
   box::use(
-    #`Hrafnagud-Dynamo`/utils/supabase_utils[ # nolint
-      utils/supabase_utils[ # nolint
+    `Hrafnagud-Dynamo`/utils/supabase_utils[ # nolint
+      # utils/supabase_utils[ # nolint
         get_table_data,
         get_table_schema,
         put_table_row,
@@ -54,8 +54,8 @@ if (database_utils == "supabase") {
 
 if (database_utils == "dynamodb") {
   box::use(
-    # `Hrafnagud-Dynamo`/utils/dynamo_utils[ # nolint
-    utils/dynamo_utils[ # nolint
+    `Hrafnagud-Dynamo`/utils/dynamo_utils[ # nolint
+    # utils/dynamo_utils[ # nolint
       get_table_data = get_processed_table_data,
       get_table_schema,
       put_table_row,
@@ -65,17 +65,17 @@ if (database_utils == "dynamodb") {
 }
 
 box::use(
-# `Hrafnagud-Dynamo`/utils/robin_utils[ # nolint
- utils/robin_utils[ # nolint
+`Hrafnagud-Dynamo`/utils/robin_utils[ # nolint
+ # utils/robin_utils[ # nolint
     load_sheet
   ],
-# `Hrafnagud-Dynamo`/utils/midas_utils[ # nolint
- utils/midas_utils[ # nolint
+`Hrafnagud-Dynamo`/utils/midas_utils[ # nolint
+ # utils/midas_utils[ # nolint
     get_mmtc_price,
     get_bullions_price
   ],
-# `Hrafnagud-Dynamo`/utils/ebenezer_utils[ # nolint
- utils/ebenezer_utils[ # nolint
+`Hrafnagud-Dynamo`/utils/ebenezer_utils[ # nolint
+ # utils/ebenezer_utils[ # nolint
     calculate_portfolio,
     summarise_portfolio,
     calculate_funds,
@@ -85,12 +85,12 @@ box::use(
     summarise_mmtc,
     summarise_sgbs
   ],
-# `Hrafnagud-Dynamo`/utils/chronos_utils[ # nolint
-utils/chronos_utils[ # nolint
+`Hrafnagud-Dynamo`/utils/chronos_utils[ # nolint
+# utils/chronos_utils[ # nolint
     get_combined_calendars
   ],
-# `Hrafnagud-Dynamo`/utils/fogg_utils[ # nolint
-utils/fogg_utils[ # nolint
+`Hrafnagud-Dynamo`/utils/fogg_utils[ # nolint
+# utils/fogg_utils[ # nolint
     get_labelled_tasks_df,
     get_tasks_analysis
   ],
