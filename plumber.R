@@ -22,9 +22,14 @@ box::use(
   memoise[
     memoise
   ],
+  glue[
+    glue
+  ],
 )
 
-database_utils = get("database_utils")
+database_utils = glue(
+  "{get('database_utils')}_utils"
+)
 
 if (database_utils == "supabase_utils") {
   box::use(
@@ -51,6 +56,10 @@ if (database_utils == "dynamo_utils") {
 }
 
 box::use(
+# `Hrafnagud-Dynamo`/utils/robin_utils[ # nolint
+ utils/robin_utils[ # nolint
+    load_sheet
+  ],
 # `Hrafnagud-Dynamo`/utils/midas_utils[ # nolint
  utils/midas_utils[ # nolint
     get_mmtc_price,

@@ -223,7 +223,6 @@ get_table_schema <- function(
 #'
 #' @param table_name Character string. Table name to use
 #' @param input_list List. The data to enter into the row
-#' @param show_old Logical. Whether to show the last values of row
 #' @param type_mapping List. A list of mapping for DynamoDb & R classes
 #' @param is_update Logical. Whether this is an update or a new row
 #' @param conn `paws::dynamodb()` object. Dependent on envvars.
@@ -232,7 +231,6 @@ get_table_schema <- function(
 put_table_row <- function(
   table_name = NULL,
   input_list = list(),
-  show_old = FALSE,
   type_mapping = get_type_mapping(),
   is_update = FALSE,
   conn = dynamodb()
@@ -242,7 +240,6 @@ put_table_row <- function(
     check_string(table_name),
     check_list(type_mapping),
     check_list(input_list),
-    check_logical(show_old),
     check_logical(is_update),
     combine = "and"
   )
@@ -260,7 +257,7 @@ put_table_row <- function(
     conn$put_item(
       TableName = table_name,
       Item = put_list,
-      ReturnValues = ifelse(show_old, "ALL_OLD", "NONE")
+      ReturnValues = "NONE"
     )
 
   } else {
@@ -402,7 +399,6 @@ get_latest_key <- function(
 #' @param table_name Character string. Table name to use
 #' @param id_value The value or index of the row. Defaults to NULL
 #' @param id_column Character. The id column name. Defaults to "id"
-#' @param show_old Logical. Whether to show the last values of row.
 #' @param conn `paws::dynamodb()` object. Dependent on envvars.
 #'
 #' @export
@@ -410,7 +406,6 @@ delete_table_row <- function(
   table_name = NULL,
   id_value = NULL,
   id_column = "id",
-  show_old = FALSE,
   conn = dynamodb()
 ) {
 
@@ -418,7 +413,6 @@ delete_table_row <- function(
     check_string(table_name),
     check_numeric(id_value),
     check_string(id_column),
-    check_logical(show_old),
     combine = "and"
   )
 
@@ -428,6 +422,6 @@ delete_table_row <- function(
   conn$delete_item(
     table_name,
     Key = key,
-    ReturnValues = ifelse(show_old, "ALL_OLD", "NONE")
+    ReturnValues = "NONE"
   )
 }

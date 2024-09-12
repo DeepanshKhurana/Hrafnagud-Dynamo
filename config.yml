@@ -1,2 +1,2 @@
 default:
-  database_utils: "supabase_utils"
+  database_utils: "supabase"

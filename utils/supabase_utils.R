@@ -6,6 +6,9 @@ box::use(
     dbGetQuery,
     dbQuoteLiteral
   ],
+  purrr[
+    map2
+  ],
   RPostgres[
     Postgres
   ],
@@ -17,12 +20,14 @@ box::use(
   ],
   checkmate[
     assert,
+    assert_class,
     assert_string,
     check_string,
     check_logical,
     assert_list,
     check_numeric,
-    check_list
+    check_list,
+    check_class
   ],
 )
 
@@ -170,7 +175,7 @@ get_table_schema <- function(
     combine = "and"
   )
   if (is_valid_table(table_name, conn)) {
-    schema_query <- glue(
+    schema_query <- glue_sql(
       "
         SELECT column_name, data_type
         FROM information_schema.columns
@@ -232,6 +237,55 @@ get_table_data <- function(
   }
 }
 
+map_sql_to_r <- function(
+  data_type,
+  type_mapping = list(
+    "bigint" = "numeric",
+    "text" = "character",
+    "double precision" = "numeric",
+    "date" = "Date",
+    "timestamp with time zone" = "POSIXct",
+    "boolean" = "logical"
+  )
+) {
+  matched_type <- type_mapping[[data_type]]
+  if (is.null(matched_type)) {
+    stop(glue("Unrecognized data type: {data_type}"))
+  }
+  matched_type
+}
+
+validate_input_types <- function(
+  input_list,
+  schema_info
+) {
+  column_names <- schema_info$column_name[seq_along(input_list)]
+  map2(
+    column_names,
+    input_list,
+    ~ {
+      expected_type <- map_sql_to_r(
+        schema_info$data_type[schema_info$column_name == .x]
+      )
+      assert(
+        check_class(
+          .y,
+          expected_type
+        )
+      )
+    }
+  )
+}
+
+filter_columns <- function(
+  schema_info,
+  is_update = FALSE
+) {
+  schema_info$column_name[
+    schema_info$column_name != "created_at"
+  ]
+}
+
 #' Insert or update a table row
 #'
 #' @param table_name The name of the table.
@@ -241,11 +295,11 @@ get_table_data <- function(
 #' @param conn A database connection object.
 #' @export
 put_table_row <- function(
-  table_name = NULL,
-  input_list = list(),
-  is_update = FALSE,
-  schema = "hrafnagud",
-  conn = make_connection()
+    table_name = NULL,
+    input_list = list(),
+    is_update = FALSE,
+    schema = "hrafnagud",
+    conn = make_connection()
 ) {
   assert(
     check_string(table_name),
@@ -255,48 +309,49 @@ put_table_row <- function(
   )
 
   if (is_valid_table(table_name, conn)) {
+    schema_info <- get_table_schema(table_name)
+    columns <- filter_columns(schema_info, is_update)
 
-    columns <- names(input_list)
-    values <- lapply(input_list, function(x) dbQuoteLiteral(conn, x))
-
-    if (is_update) {
-      set_clause <- glue_collapse(
-        mapply(function(col, val) glue("{col} = {val}"), columns, values, SIMPLIFY = FALSE),
-        sep = ", "
-      )
-      query <- glue(
-        "
-          UPDATE {schema}.{table_name}
-          SET {set_clause}
-          WHERE id = {input_list[['id']]}
-        "
-      )
-    } else {
-      if (!"id" %in% columns) {
-        input_list[["id"]] <- 1 + get_latest_key(
+    if (!is_update) {
+      input_list <- c(
+        id = 1 + get_latest_key(
           table_name,
           schema = schema,
           conn = conn
-      )
-        columns <- names(input_list)
-        values <- lapply(input_list, function(x) dbQuoteLiteral(conn, x))
-      }
-
-      query <- glue(
-        "
-          INSERT INTO {schema}.{table_name}
-          ({glue_collapse(columns, sep = ', ')})
-          VALUES ({glue_collapse(values, sep = ', ')})
-        "
+        ),
+        input_list
       )
     }
+
+    names(input_list) <- columns
+
+    validate_input_types(input_list, schema_info)
+
+    values <- lapply(input_list, function(x) dbQuoteLiteral(conn, x))
+
+    if (is_update) {
+      set_clause <- glue_sql_collapse(
+        mapply(function(col, val) glue_sql("{`col`} = {val}", .con = conn), names(input_list), values, SIMPLIFY = FALSE),
+        sep = ", "
+      )
+      query <- glue_sql(
+        "UPDATE {`schema`}.{`table_name`}
+         SET {set_clause}
+         WHERE id = {input_list[['id']]}",
+        .con = conn
+      )
+    } else {
+      query <- glue_sql(
+        "INSERT INTO {`schema`}.{`table_name`}
+         ({glue_sql_collapse(`columns`, sep = ', ')})
+         VALUES ({glue_sql_collapse(values, sep = ', ')})",
+        .con = conn
+      )
+    }
+
     dbExecute(conn, query)
   } else {
-    stop(
-      glue(
-        "Table '{table_name}' does not exist!"
-      )
-    )
+    stop(glue("Table '{table_name}' does not exist!"))
   }
 }
 
