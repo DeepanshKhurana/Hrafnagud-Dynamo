@@ -1,5 +1,8 @@
 box::use(
   plumber[...],
+  config[
+    get
+  ],
   dplyr[
     mutate,
     case_when,
@@ -21,25 +24,40 @@ box::use(
   ],
 )
 
+database_utils = get("database_utils")
+
+if (database_utils == "supabase_utils") {
+  box::use(
+    #`Hrafnagud-Dynamo`/utils/supabase_utils[ # nolint
+      utils/supabase_utils[ # nolint
+        get_table_data,
+        get_table_schema,
+        put_table_row,
+        delete_table_row
+      ],
+  )
+}
+
+if (database_utils == "dynamo_utils") {
+  box::use(
+    # `Hrafnagud-Dynamo`/utils/dynamo_utils[ # nolint
+    utils/dynamo_utils[ # nolint
+      get_table_data = get_processed_table_data(),
+      get_table_schema,
+      put_table_row,
+      delete_table_row
+    ],
+  )
+}
+
 box::use(
-`Hrafnagud-Dynamo`/utils/crud_utils[ # nolint
-  # utils/crud_utils[ # nolint
-    get_processed_table_data,
-    get_table_schema,
-    put_table_row,
-    delete_table_row
-  ],
-`Hrafnagud-Dynamo`/utils/robin_utils[ # nolint
- # utils/robin_utils[ # nolint
-    load_sheet
-  ],
-`Hrafnagud-Dynamo`/utils/midas_utils[ # nolint
- # utils/midas_utils[ # nolint
+# `Hrafnagud-Dynamo`/utils/midas_utils[ # nolint
+ utils/midas_utils[ # nolint
     get_mmtc_price,
     get_bullions_price
   ],
-`Hrafnagud-Dynamo`/utils/ebenezer_utils[ # nolint
- # utils/ebenezer_utils[ # nolint
+# `Hrafnagud-Dynamo`/utils/ebenezer_utils[ # nolint
+ utils/ebenezer_utils[ # nolint
     calculate_portfolio,
     summarise_portfolio,
     calculate_funds,
@@ -49,12 +67,12 @@ box::use(
     summarise_mmtc,
     summarise_sgbs
   ],
-`Hrafnagud-Dynamo`/utils/chronos_utils[ # nolint
-# utils/chronos_utils[ # nolint
+# `Hrafnagud-Dynamo`/utils/chronos_utils[ # nolint
+utils/chronos_utils[ # nolint
     get_combined_calendars
   ],
-`Hrafnagud-Dynamo`/utils/fogg_utils[ # nolint
-# utils/fogg_utils[ # nolint
+# `Hrafnagud-Dynamo`/utils/fogg_utils[ # nolint
+utils/fogg_utils[ # nolint
     get_labelled_tasks_df,
     get_tasks_analysis
   ],
@@ -127,23 +145,20 @@ function(
 #* New row
 #* @param table_name:chr The table name to add the row to.
 #* @param input_list:[chr] The list of values to add in the row.
-#* @param show_old:logical Show the last values of the row?
 #* @put /create
 #* @tag CRUD
 function(
   res,
   req,
   table_name,
-  input_list,
-  show_old
+  input_list
 ) {
   auth_helper(
     res,
     req,
     put_table_row,
     table_name = table_name,
-    input_list = as.list(input_list),
-    show_old = as.logical(show_old)
+    input_list = as.list(input_list)
   )
 }
 
@@ -163,7 +178,7 @@ function(
   auth_helper(
     res,
     req,
-    get_processed_table_data,
+    get_table_data,
     table_name = table_name,
     limit = as.numeric(limit)
   )
@@ -174,15 +189,13 @@ function(
 #* Update row
 #* @param table_name:chr The table name to modify the row in.
 #* @param input_list:[chr] The list of values to add in the row.
-#* @param show_old:logical Show the last values of the row?
 #* @put /update
 #* @tag CRUD
 function(
   res,
   req,
   table_name,
-  input_list,
-  show_old
+  input_list
 ) {
   auth_helper(
     res,
@@ -190,7 +203,6 @@ function(
     put_table_row,
     table_name = table_name,
     input_list = as.list(input_list),
-    show_old = as.logical(show_old),
     is_update = TRUE
   )
 }
@@ -200,23 +212,20 @@ function(
 #* Delete row
 #* @param table_name:chr The table name to remove the row from.
 #* @param row_key:numeric The index of the row to delete.
-#* @param show_old:logical Show the last values of the row?
 #* @delete /delete
 #* @tag CRUD
 function(
   res,
   req,
   table_name,
-  row_key,
-  show_old
+  row_key
 ) {
   auth_helper(
     res,
     req,
     delete_table_row,
     table_name = table_name,
-    id_value = as.numeric(row_key),
-    show_old = as.logical(show_old)
+    id_value = as.numeric(row_key)
   )
 }
 
@@ -234,7 +243,7 @@ function(
   auth_helper(
     res,
     req,
-    get_processed_table_data,
+    get_table_data,
     table_name = "livingston_trips"
   )
 }
@@ -255,7 +264,7 @@ function(
   data <- auth_helper(
     res,
     req,
-    get_processed_table_data,
+    get_table_data,
     table_name = "livingston_details"
   )
   data[
@@ -275,7 +284,7 @@ function(
   data <- auth_helper(
     res,
     req,
-    get_processed_table_data,
+    get_table_data,
     table_name = "livingston_trips"
   )
 
@@ -381,7 +390,7 @@ function(
   auth_helper(
     res,
     req,
-    get_processed_table_data,
+    get_table_data,
     table_name = "ebenezer_stocks"
   )
 }
@@ -405,7 +414,7 @@ function(
   funds_data <- auth_helper(
     res,
     req,
-    get_processed_table_data,
+    get_table_data,
     table_name = "ebenezer_funds"
   )
 
@@ -427,7 +436,7 @@ function(
   auth_helper(
     res,
     req,
-    get_processed_table_data,
+    get_table_data,
     table_name = "ebenezer_deposits"
   )
 }
@@ -444,7 +453,7 @@ function(
   auth_helper(
     res,
     req,
-    get_processed_table_data,
+    get_table_data,
     table_name = "ebenezer_savings"
   )
 }
@@ -461,7 +470,7 @@ function(
   auth_helper(
     res,
     req,
-    get_processed_table_data,
+    get_table_data,
     table_name = "ebenezer_mmtc"
   )
 }
@@ -478,7 +487,7 @@ function(
   auth_helper(
     res,
     req,
-    get_processed_table_data,
+    get_table_data,
     table_name = "ebenezer_sgbs"
   )
 }
@@ -502,7 +511,7 @@ function(
   stocks_data <- auth_helper(
     res,
     req,
-    get_processed_table_data,
+    get_table_data,
     table_name = "ebenezer_stocks"
   )
 
@@ -530,7 +539,7 @@ function(
   stocks_data <- auth_helper(
     res,
     req,
-    get_processed_table_data,
+    get_table_data,
     table_name = "ebenezer_stocks"
   )
   portfolio <- summarise_portfolio(
@@ -557,7 +566,7 @@ function(
   funds_data <- auth_helper(
     res,
     req,
-    get_processed_table_data,
+    get_table_data,
     table_name = "ebenezer_funds"
   )
   summarise_funds(
@@ -578,7 +587,7 @@ function(
   deposits_data <- auth_helper(
     res,
     req,
-    get_processed_table_data,
+    get_table_data,
     table_name = "ebenezer_deposits"
   )
   summarise_deposits(deposits_data)
@@ -596,7 +605,7 @@ function(
   savings_data <- auth_helper(
     res,
     req,
-    get_processed_table_data,
+    get_table_data,
     table_name = "ebenezer_savings"
   )
   summarise_savings(savings_data)
@@ -614,7 +623,7 @@ function(
   mmtc_data <- auth_helper(
     res,
     req,
-    get_processed_table_data,
+    get_table_data,
     table_name = "ebenezer_mmtc"
   )
   summarise_mmtc(
@@ -635,7 +644,7 @@ function(
   sgbs_data <- auth_helper(
     res,
     req,
-    get_processed_table_data,
+    get_table_data,
     table_name = "ebenezer_sgbs"
   )
   summarise_sgbs(
@@ -657,28 +666,28 @@ function(
   sgbs_data <- auth_helper(
     res,
     req,
-    get_processed_table_data,
+    get_table_data,
     table_name = "ebenezer_sgbs"
   )
 
   mmtc_data <- auth_helper(
     res,
     req,
-    get_processed_table_data,
+    get_table_data,
     table_name = "ebenezer_mmtc"
   )
 
   savings_data <- auth_helper(
     res,
     req,
-    get_processed_table_data,
+    get_table_data,
     table_name = "ebenezer_savings"
   )
 
   deposits_data <- auth_helper(
     res,
     req,
-    get_processed_table_data,
+    get_table_data,
     table_name = "ebenezer_deposits"
   )
 
@@ -692,7 +701,7 @@ function(
   funds_data <- auth_helper(
     res,
     req,
-    get_processed_table_data,
+    get_table_data,
     table_name = "ebenezer_funds"
   )
 
@@ -706,7 +715,7 @@ function(
   stocks_data <- auth_helper(
     res,
     req,
-    get_processed_table_data,
+    get_table_data,
     table_name = "ebenezer_stocks"
   )
 

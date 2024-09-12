@@ -26,11 +26,12 @@ box::use(
   ],
 )
 
-box::use(
-  utils/global_utils[
-    generate_error
-  ]
-)
+#' Helper function generate an error message
+generate_error <- function() {
+  print(
+    "Cannot connect to Supabase. Are environment variables set?"
+  )
+}
 
 #' Read Supabase credentials from environment variables
 #'
@@ -252,7 +253,7 @@ put_table_row <- function(
     check_logical(is_update),
     combine = "and"
   )
-  
+
   if (is_valid_table(table_name, conn)) {
 
     columns <- names(input_list)
@@ -280,11 +281,11 @@ put_table_row <- function(
         columns <- names(input_list)
         values <- lapply(input_list, function(x) dbQuoteLiteral(conn, x))
       }
-      
+
       query <- glue(
         "
           INSERT INTO {schema}.{table_name}
-          ({glue_collapse(columns, sep = ', ')}) 
+          ({glue_collapse(columns, sep = ', ')})
           VALUES ({glue_collapse(values, sep = ', ')})
         "
       )
