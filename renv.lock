@@ -722,6 +722,16 @@
       ],
       "Hash": "93e9379f4be8c0bf1862dfc7f720193e"
     },
+    "logger": {
+      "Package": "logger",
+      "Version": "0.3.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "utils"
+      ],
+      "Hash": "c145edf05cc128e6ffcfa5d872c46329"
+    },
     "lubridate": {
       "Package": "lubridate",
       "Version": "1.9.3",
