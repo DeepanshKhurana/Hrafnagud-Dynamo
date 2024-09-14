@@ -433,13 +433,9 @@ calculate_funds <- function(
   funds_data,
   ticker_data
 ) {
-  merge(
-    funds_data |>
-      select(-provider),
-    ticker_data,
-    by.x = "name",
-    by.y = "fund_name"
-  ) |>
+  funds_data |>
+    rename(fund_name = name) |>
+    left_join(ticker_data) |>
     mutate(
       current_value = true_round(
         as.numeric(unit_balance) * as.numeric(current_price),
