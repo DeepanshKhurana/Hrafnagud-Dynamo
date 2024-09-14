@@ -29,6 +29,9 @@ box::use(
     check_list,
     check_class
   ],
+  logger[
+    log_error
+  ],
 )
 
 #' Helper function generate an error message
@@ -344,7 +347,22 @@ put_table_row <- function(
 
     values <- lapply(
       input_list,
-      function(x) dbQuoteLiteral(conn, x)
+      function(value) {
+        if (inherits(value, "Date")) {
+          dbQuoteLiteral(conn, value)
+        } else if (is.character(value)) {
+          if (gsub('"|\'', '', value) == "NA") {
+            dbQuoteLiteral(conn, "")
+          } else {
+            dbQuoteLiteral(conn, value)
+          }
+        } else if (is.numeric(as.numeric(value))) {
+          as.numeric(value)
+        } else {
+          logger::log_error("Error occurred while parsing: {value}")
+          stop("Check put_table_row()!")
+        }
+      }
     )
 
     if (is_update) {
