@@ -449,7 +449,8 @@ calculate_funds <- function(
         as.numeric(profit) * 100 / as.numeric(total_invested),
         2
       )
-    )
+    ) |>
+    rename(name = fund_name)
 }
 
 #' Process the funds data and add some required columns
