@@ -94,6 +94,10 @@ box::use(
     get_labelled_tasks_df,
     get_tasks_analysis
   ],
+`Hrafnagud-Dynamo`/utils/icarus_utils[ # nolint
+# utils/icarus_utils[ #nolint
+    get_flight_data
+  ],
 )
 
 # Helper ----
@@ -131,6 +135,7 @@ auth_helper <- function(
 #* @apiTag CRUD DynamoDb Utility Endpoints
 #* @apiTag Robin Custom Google Finance Ticker Endpoints
 #* @apiTag Midas Custom Gold Price Crawler Endpoints
+#* @apiTag Icarus Flight Data AviationStack Endpoints
 #* @apiTag Livingston Trip-related Endpoints
 #* @apiTag Ebenezer Finance-related Endpoints
 #* @apiTag Fogg Todoist Task-related Endpoints
@@ -244,6 +249,30 @@ function(
     delete_table_row,
     table_name = table_name,
     id_value = as.numeric(row_key)
+  )
+}
+
+## Icarus ----
+
+### Flights ----
+
+#* Flights
+#* @param flight_iata:chr The IATA code of the flight e.g. UK616
+#* @param flight_date:chr The flight date in YYYY-MM-DD format
+#* @get /icarus/flights
+#* @tag Icarus
+function(
+  res,
+  req,
+  flight_iata,
+  flight_date
+) {
+  auth_helper(
+    res,
+    req,
+    get_flight_data,
+    flight_iata = flight_iata,
+    flight_date = as.Date(flight_date)
   )
 }
 
