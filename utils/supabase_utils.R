@@ -323,12 +323,12 @@ put_table_row <- function(
       function(index) {
         tryCatch(
           expr = {
-            FUN <- map_sql_to_r(
+            FUN <- map_sql_to_r( # nolint
               table_schema$data_type[index] |>
                 unlist()
             )
-            if (identical(FUN, as.Date)) {
-              FUN(
+            if (identical(FUN, as.Date)) { # nolint
+              FUN( # nolint
                 input_list[index] |>
                   as.character(),
                 format = "%Y-%m-%d"
@@ -351,7 +351,7 @@ put_table_row <- function(
         if (inherits(value, "Date")) {
           dbQuoteLiteral(conn, value)
         } else if (is.character(value)) {
-          if (gsub('"|\'', '', value) == "NA") {
+          if (gsub('"|\'', "", value) == "NA") {
             dbQuoteLiteral(conn, "")
           } else {
             dbQuoteLiteral(conn, value)
