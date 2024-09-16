@@ -863,7 +863,8 @@ function(
     ) |>
       unlist() |>
       as.numeric() |>
-      sum()
+      sum(),
+    "type" = "TOTAL"
   )
 
   c(list("networth" = totals), networth)
