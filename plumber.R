@@ -44,11 +44,11 @@ if (database_utils == "supabase") {
   box::use(
     `Hrafnagud-Dynamo`/utils/supabase_utils[ # nolint
       # utils/supabase_utils[ # nolint
-        get_table_data,
-        get_table_schema,
-        put_table_row,
-        delete_table_row
-      ],
+      get_table_data,
+      get_table_schema,
+      put_table_row,
+      delete_table_row
+    ],
   )
 }
 
@@ -745,7 +745,7 @@ function(
     sheet_name = "Funds"
   )
 
-  funds_data <- auth_helper(
+  mutual_funds_data <- auth_helper(
     res,
     req,
     get_table_data,
@@ -766,33 +766,86 @@ function(
     table_name = "ebenezer_stocks"
   )
 
+  etfs_data <- stocks_data[
+    stocks_data$stock_symbol %in% c("HDFSIL", "HDFGOL"),
+  ]
+
+  stocks_data <-  stocks_data[
+    !(stocks_data$stock_symbol %in% c("HDFSIL", "HDFGOL")),
+  ]
+
+  debt_funds_data <- mutual_funds_data[
+    mutual_funds_data$name == "Dynamic Bond Fund",
+  ]
+
+  mutual_funds_data <- mutual_funds_data[
+    mutual_funds_data$name != "Dynamic Bond Fund",
+  ]
+
   networth <- list(
-    "stocks" = summarise_portfolio(
-      stocks_data,
-      stocks_ticker_data
-    )[
-      c(
-        "invested",
-        "current"
-      )
-    ],
-    "funds" = summarise_funds(
-      funds_data,
-      funds_ticker_data
+    "stocks" = c(
+      summarise_portfolio(
+        stocks_data,
+        stocks_ticker_data
+      )[
+        c(
+          "invested",
+          "current"
+        )
+      ],
+      "type" = "EQUITY"
     ),
-    "deposits" = summarise_deposits(
-      deposits_data
+    "etfs" = c(
+      summarise_portfolio(
+        etfs_data,
+        stocks_ticker_data
+      )[
+        c(
+          "invested",
+          "current"
+        )
+      ],
+      "type" = "BULLION"
     ),
-    "savings" = summarise_savings(
-      savings_data
+    "debt_funds" = c(
+      summarise_funds(
+        debt_funds_data,
+        funds_ticker_data
+      ),
+      "type" = "DEBT"
     ),
-    "mmtc" = summarise_mmtc(
-      mmtc_data,
-      get_mmtc_price()
+    "mutual_funds" = c(
+      summarise_funds(
+        mutual_funds_data,
+        funds_ticker_data
+      ),
+      "type" = "EQUITY"
     ),
-    "sgbs" = summarise_sgbs(
-      sgbs_data,
-      get_bullions_price()
+    "deposits" = c(
+      summarise_deposits(
+        deposits_data
+      ),
+      "type" = "DEBT"
+    ),
+    "savings" = c(
+      summarise_savings(
+        savings_data
+      ),
+      "type" = "DEBT"
+    ),
+    "mmtc" = c(
+      summarise_mmtc(
+        mmtc_data,
+        get_mmtc_price()
+      ),
+      "type" = "BULLION"
+    ),
+    "sgbs" = c(
+      summarise_sgbs(
+        sgbs_data,
+        get_bullions_price()
+      ),
+      "type" = "BULLION"
     )
   )
 
