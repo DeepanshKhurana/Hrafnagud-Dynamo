@@ -18,4 +18,4 @@ RUN R -e "renv::restore()"
 
 EXPOSE 8008
 
-CMD ["R", "-e", "source('Hrafnagud-Dynamo/entrypoint.R')"]
+CMD ["R", "-e", "source('/usr/local/Hrafnagud-Dynamo/entrypoint.R')"]
