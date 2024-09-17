@@ -14,8 +14,8 @@ box::use(
 #'
 load_sheet <- function(
   sheet_name = NULL,
-  cache = ".secrets",
-  path = "service_account.json"
+  cache = ".",
+  path = ".service_account"
 ) {
 
   gs4_auth(path = file.path(cache, path))
