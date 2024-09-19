@@ -4,3 +4,4 @@
 .Ruserdata
 .secrets
 .DS_Store
+.service_account
