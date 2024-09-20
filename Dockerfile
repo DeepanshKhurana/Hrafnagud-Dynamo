@@ -14,6 +14,8 @@ COPY . /usr/local/Hrafnagud-Dynamo/
 
 WORKDIR /usr/local/Hrafnagud-Dynamo/
 
+RUN R -e "source('.Rprofile')"
+
 RUN R -e "renv::restore()"
 
 EXPOSE 8008
