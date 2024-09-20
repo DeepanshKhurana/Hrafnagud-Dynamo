@@ -153,11 +153,12 @@ download_calendars <- function(
   calendars = get("calendars")
 ) {
   labels <- names(calendars)
+  if (!dir.exists("calendars")) dir.create("calendars")
   map2(
     .x = calendars,
     .y = labels,
     .f = function(calendar, label) {
-      filename <- tempfile(fileext = ".ics")
+      filename <- tempfile(fileext = ".ics", tmpdir = "./calendars")
       download.file(calendar$url, destfile = filename)
       list(
         filename = filename,
@@ -203,4 +204,7 @@ get_combined_calendars <- function(
     arrange(status) |>
     select(-c(priority, start)) |>
     data.frame()
+
+  list.files("./calendars", full.names = TRUE) |>
+    file.remove()
 }
