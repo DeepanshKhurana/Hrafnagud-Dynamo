@@ -16,7 +16,8 @@ box::use(
   ],
   purrr[
     map,
-    pmap
+    pmap,
+    pmap_dfr
   ],
   ical[
     ical_parse_df
@@ -156,7 +157,7 @@ download_calendars <- function(
   calendars = NULL
 ) {
   if (!dir.exists("calendars")) dir.create("calendars")
-  pmap(
+  map(
     list(calendars$url, calendars$name, calendars$priority),
     function(url, name, priority) {
       filename <- tempfile(fileext = ".ics", tmpdir = "./calendars")
@@ -208,4 +209,52 @@ get_combined_calendars <- function(
     select(-c(priority, start)) |>
     data.frame()
   calendars
+}
+
+#' Combine and process calendar data.
+#'
+#' @param calendars A list of calendar objects with URLs and priorities.
+#' @return A combined data frame of calendar events.
+#' @export
+get_combined_calendars_ <- function(
+  calendars = get_table_data("chronos_calendars")
+) {
+  if (!dir.exists("calendars")) dir.create("calendars")
+  pmap_dfr(
+    calendars,
+    function(
+      url,
+      name,
+      priority,
+      ...
+    ) {
+      filename <- tempfile(
+        fileext = ".ics",
+        tmpdir = "./calendars"
+      )
+      download.file(url, destfile = filename)
+      parsed_calendar <- ical_parse_df(filename) |>
+        combine_calendar_df() |>
+        mutate(
+          label = toupper(name),
+          priority = priority
+        )
+      file.remove(filename)
+      parsed_calendar
+    }
+  ) |>
+    arrange(status) |>
+    group_by(summary) |>
+    slice_min(
+      order_by = priority,
+      with_ties = TRUE
+    ) |>
+    ungroup() |>
+    distinct() |>
+    select(
+      -c(
+        priority,
+        start
+      )
+    )
 }
