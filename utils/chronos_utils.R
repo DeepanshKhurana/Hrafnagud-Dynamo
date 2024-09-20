@@ -1,7 +1,4 @@
 box::use(
-  config[
-    get
-  ],
   dplyr[
     arrange,
     filter,
@@ -19,7 +16,7 @@ box::use(
   ],
   purrr[
     map,
-    map2
+    pmap
   ],
   ical[
     ical_parse_df
@@ -30,6 +27,12 @@ box::use(
   utils[
     download.file
   ],
+)
+
+box::use(
+  utils/supabase_utils[
+    get_table_data
+  ]
 )
 
 #' Get abbreviated weekday name.
@@ -150,20 +153,18 @@ combine_calendar_df <- function(
 #' @param calendars A list of calendar objects with URLs and priorities.
 #' @return A list of calendar files with labels and priorities.
 download_calendars <- function(
-  calendars = get("calendars")
+  calendars = NULL
 ) {
-  labels <- names(calendars)
   if (!dir.exists("calendars")) dir.create("calendars")
-  map2(
-    .x = calendars,
-    .y = labels,
-    .f = function(calendar, label) {
+  pmap(
+    list(calendars$url, calendars$name, calendars$priority),
+    function(url, name, priority) {
       filename <- tempfile(fileext = ".ics", tmpdir = "./calendars")
-      download.file(calendar$url, destfile = filename)
+      download.file(url, destfile = filename)
       list(
         filename = filename,
-        label = toupper(label),
-        priority = calendar$priority
+        label = toupper(name),
+        priority = priority
       )
     }
   )
@@ -175,7 +176,7 @@ download_calendars <- function(
 #' @return A combined data frame of calendar events.
 #' @export
 get_combined_calendars <- function(
-  calendars = get("calendars")
+  calendars = get_table_data("chronos_calendars")
 ) {
   calendars <- download_calendars(calendars)
   calendars <- map(
@@ -204,7 +205,7 @@ get_combined_calendars <- function(
     arrange(status) |>
     select(-c(priority, start)) |>
     data.frame()
-
   list.files("./calendars", full.names = TRUE) |>
     file.remove()
+  calendars
 }
