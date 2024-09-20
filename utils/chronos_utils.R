@@ -182,12 +182,14 @@ get_combined_calendars <- function(
   calendars <- map(
     .x = calendars,
     .f = function(calendar) {
-      ical_parse_df(calendar$filename) |>
+      parsed_calendar <- ical_parse_df(calendar$filename) |>
         combine_calendar_df() |>
         mutate(
           label = calendar$label,
           priority = calendar$priority
         )
+      file.remove(calendar$filename)
+      parsed_calendar
     }
   ) |>
     bind_rows() |>
@@ -205,7 +207,5 @@ get_combined_calendars <- function(
     arrange(status) |>
     select(-c(priority, start)) |>
     data.frame()
-  list.files("./calendars", full.names = TRUE) |>
-    file.remove()
   calendars
 }
