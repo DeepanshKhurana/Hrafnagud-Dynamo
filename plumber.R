@@ -80,9 +80,6 @@ box::use(
     summarise_mmtc,
     summarise_sgbs
   ],
-utils/chronos_utils[ # nolint
-    get_combined_calendars
-  ],
 utils/fogg_utils[ # nolint
     get_labelled_tasks_df,
     get_tasks_analysis
@@ -876,7 +873,8 @@ function(
   auth_helper(
     res,
     req,
-    get_combined_calendars
+    get_table_data,
+    table_name = "chronos_cache"
   )
 }
 
