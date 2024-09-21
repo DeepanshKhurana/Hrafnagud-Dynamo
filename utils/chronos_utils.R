@@ -152,7 +152,11 @@ read_calendar <- function(
   name,
   priority
 ) {
-  print(glue("Processing: {name} | Priority: {priority} \n{url}"))
+  print(
+    glue(
+      "Processing: {name} | Priority: {priority}"
+    )
+  )
   ical_parse_df(
     text = readLines(
       url,
