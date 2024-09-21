@@ -81,7 +81,7 @@ box::use(
     summarise_sgbs
   ],
 utils/chronos_utils[ # nolint
-    get_combined_calendars_
+    get_combined_calendars
   ],
 utils/fogg_utils[ # nolint
     get_labelled_tasks_df,
@@ -876,7 +876,7 @@ function(
   auth_helper(
     res,
     req,
-    get_combined_calendars_
+    get_combined_calendars
   )
 }
 

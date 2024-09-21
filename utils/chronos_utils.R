@@ -6,18 +6,10 @@ box::use(
     case_when,
     distinct,
     group_by,
-    if_else,
     mutate,
-    n,
     select,
     slice_min,
-    summarise,
     ungroup
-  ],
-  purrr[
-    map,
-    pmap,
-    pmap_dfr
   ],
   ical[
     ical_parse_df
@@ -25,8 +17,8 @@ box::use(
   tidyr[
     separate_rows
   ],
-  utils[
-    download.file
+  glue[
+    glue
   ],
 )
 
@@ -149,99 +141,71 @@ combine_calendar_df <- function(
     arrange(status)
 }
 
-#' Download calendar files from URLs.
+#' Read a calendar and parse it
 #'
-#' @param calendars A list of calendar objects with URLs and priorities.
-#' @return A list of calendar files with labels and priorities.
-download_calendars <- function(
-  calendars = NULL
+#' @param url The url for the calendar
+#' @param name The name of the calendar
+#' @param priority The priorty of the calendar
+#' @return A data frame of events
+read_calendar <- function(
+  url,
+  name,
+  priority
 ) {
-  if (!dir.exists("calendars")) dir.create("calendars")
-  map(
-    list(calendars$url, calendars$name, calendars$priority),
-    function(url, name, priority) {
-      filename <- tempfile(fileext = ".ics", tmpdir = "./calendars")
-      download.file(url, destfile = filename)
-      list(
-        filename = filename,
-        label = toupper(name),
-        priority = priority
-      )
-    }
-  )
+  print(glue("Processing: {name} | Priority: {priority} \n{url}"))
+  ical_parse_df(
+    text = readLines(
+      url,
+      warn = FALSE
+    )
+  ) |>
+    combine_calendar_df() |>
+    mutate(
+      label = toupper(name),
+      priority = priority
+    )
 }
 
-#' Combine and process calendar data.
+#' Get Combined Calendars
 #'
-#' @param calendars A list of calendar objects with URLs and priorities.
-#' @return A combined data frame of calendar events.
+#' Downloads and combines calendar data from specified URLs.
+#'
+#' @param calendars A dataframe containing calendars.
+#' @return A combined dataframe of parsed calendar events.
 #' @export
 get_combined_calendars <- function(
   calendars = get_table_data("chronos_calendars")
 ) {
-  calendars <- download_calendars(calendars)
-  calendars <- map(
-    .x = calendars,
-    .f = function(calendar) {
-      parsed_calendar <- ical_parse_df(calendar$filename) |>
-        combine_calendar_df() |>
-        mutate(
-          label = calendar$label,
-          priority = calendar$priority
+  process_combined_calendars(
+    lapply(
+      seq_len(
+        nrow(
+          calendars
         )
-      file.remove(calendar$filename)
-      parsed_calendar
-    }
-  ) |>
-    bind_rows() |>
-    arrange(status) |>
-    group_by(summary) |>
-    mutate(
-      summary = gsub("Deepansh's ", "", summary)
-    ) |>
-    slice_min(
-      order_by = priority,
-      with_ties = TRUE
-    ) |>
-    ungroup() |>
-    distinct() |>
-    arrange(status) |>
-    select(-c(priority, start)) |>
-    data.frame()
-  calendars
+      ),
+      function(index) {
+        read_calendar(
+          url = calendars$url[index],
+          name = calendars$name[index],
+          priority = calendars$priority[index]
+        )
+      }
+    )
+  )
 }
 
-#' Combine and process calendar data.
+#' Process Combined Calendars
 #'
-#' @param calendars A list of calendar objects with URLs and priorities.
-#' @return A combined data frame of calendar events.
-#' @export
-get_combined_calendars_ <- function(
-  calendars = get_table_data("chronos_calendars")
+#' Combines and processes a list of processed calendar dataframes.
+#'
+#' @param processed_calendars A list of dataframes from parsed calendar events.
+#' @return A single dataframe containing distinct calendar events.
+process_combined_calendars <- function(
+  processed_calendars
 ) {
-  if (!dir.exists("calendars")) dir.create("calendars")
-  pmap_dfr(
-    calendars,
-    function(
-      url,
-      name,
-      priority,
-      ...
-    ) {
-      filename <- tempfile(
-        fileext = ".ics",
-        tmpdir = "./calendars"
-      )
-      download.file(url, destfile = filename)
-      parsed_calendar <- ical_parse_df(filename) |>
-        combine_calendar_df() |>
-        mutate(
-          label = toupper(name),
-          priority = priority
-        )
-      file.remove(filename)
-      parsed_calendar
-    }
+  do.call(
+    rbind,
+    processed_calendars
   ) |>
     arrange(status) |>
     group_by(summary) |>
