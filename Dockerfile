@@ -1,4 +1,4 @@
-FROM rocker/r-base
+FROM deepanshkhurana/hrafnagud-base:v1
 
 RUN R -e "install.packages('renv')"
 
