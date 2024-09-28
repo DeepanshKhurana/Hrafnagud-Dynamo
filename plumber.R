@@ -29,10 +29,12 @@ box::use(
     assert_subset
   ],
   jsonlite[
-    fromJSON
+    fromJSON,
+    toJSON
   ],
   supabaseR[
-    get_table_query
+    get_table_query,
+    get_cron_time
   ],
 )
 
@@ -157,6 +159,26 @@ cache_helper <- function(
   ) |>
     as.character() |>
     fromJSON()
+}
+
+cache_new_row <- function(
+  response,
+  req
+) {
+  put_table_row_(
+    table_name = "hrafnagud_cache",
+    input_list = list(
+      endpoint = substr(req$PATH_INFO, 2, nchar(req$PATH_INFO)),
+      response = response |>
+        toJSON(
+          auto_unbox = TRUE,
+          pretty = TRUE,
+          null = "null"
+
+        ),
+      cron_time = glue("{get_cron_time()}:00")
+    )
+  )
 }
 
 # API Spec ----
@@ -352,12 +374,14 @@ function(
       req_path = req$PATH_INFO
     )
   } else {
-    auth_helper(
+    result <- auth_helper(
       res,
       req,
       get_table_data_,
       table_name = "livingston_trips"
     )
+    cache_new_row(result, req)
+    result
   }
 }
 
@@ -372,8 +396,6 @@ function(
   req,
   trip_id
 ) {
-
-  # TODO Make functions here to wrap inside the third param
   data <- auth_helper(
     res,
     req,
@@ -401,7 +423,7 @@ function(
       req_path = req$PATH_INFO
     )
   } else {
-    data <- auth_helper(
+    result <- auth_helper(
       res,
       req,
       get_table_data_,
@@ -410,7 +432,7 @@ function(
 
     current <- Sys.Date()
 
-    data |>
+    result <- result |>
       mutate(start = ymd(start_date),
              end = ymd(end_date)) |>
       mutate(trip_status = case_when(
@@ -424,6 +446,9 @@ function(
         trip_status = c("Past", "Ongoing", "Upcoming"),
         fill = list(trip_count = 0)
       )
+
+    cache_new_row(result, req)
+    result
   }
 }
 
@@ -445,12 +470,14 @@ function(
       req_path = req$PATH_INFO
     )
   } else {
-    auth_helper(
+    result <- auth_helper(
       res,
       req,
       load_sheet,
       sheet_name = "Stocks"
     )
+    cache_new_row(result, req)
+    result
   }
 }
 
@@ -470,12 +497,14 @@ function(
       req_path = req$PATH_INFO
     )
   } else {
-    auth_helper(
+    result <- auth_helper(
       res,
       req,
       load_sheet,
       sheet_name = "Funds"
     )
+    cache_new_row(result, req)
+    result
   }
 }
 
@@ -497,11 +526,13 @@ function(
       req_path = req$PATH_INFO
     )
   } else {
-    auth_helper(
+    result <- auth_helper(
       res,
       req,
       get_mmtc_price
     )
+    cache_new_row(result, req)
+    result
   }
 }
 
@@ -521,11 +552,13 @@ function(
       req_path = req$PATH_INFO
     )
   } else {
-    auth_helper(
+    result <- auth_helper(
       res,
       req,
       get_bullions_price
     )
+    cache_new_row(result, req)
+    result
   }
 }
 
@@ -547,12 +580,14 @@ function(
       req_path = req$PATH_INFO
     )
   } else {
-    auth_helper(
+    result <- auth_helper(
       res,
       req,
       get_table_data_,
       table_name = "ebenezer_stocks"
     )
+    cache_new_row(result, req)
+    result
   }
 }
 
@@ -586,10 +621,13 @@ function(
       table_name = "ebenezer_funds"
     )
 
-    calculate_funds(
+    result <- calculate_funds(
       funds_data,
       ticker_data
     )
+
+    cache_new_row(result, req)
+    result
   }
 }
 
@@ -609,12 +647,14 @@ function(
       req_path = req$PATH_INFO
     )
   } else {
-    auth_helper(
+    result <- auth_helper(
       res,
       req,
       get_table_data_,
       table_name = "ebenezer_deposits"
     )
+    cache_new_row(result, req)
+    result
   }
 }
 
@@ -634,12 +674,14 @@ function(
       req_path = req$PATH_INFO
     )
   } else {
-    auth_helper(
+    result <- auth_helper(
       res,
       req,
       get_table_data_,
       table_name = "ebenezer_savings"
     )
+    cache_new_row(result, req)
+    result
   }
 }
 
@@ -659,12 +701,14 @@ function(
       req_path = req$PATH_INFO
     )
   } else {
-    auth_helper(
+    result <- auth_helper(
       res,
       req,
       get_table_data_,
       table_name = "ebenezer_mmtc"
     )
+    cache_new_row(result, req)
+    result
   }
 }
 
@@ -684,12 +728,14 @@ function(
       req_path = req$PATH_INFO
     )
   } else {
-    auth_helper(
+    result <- auth_helper(
       res,
       req,
       get_table_data_,
       table_name = "ebenezer_sgbs"
     )
+    cache_new_row(result, req)
+    result
   }
 }
 
@@ -723,10 +769,13 @@ function(
       table_name = "ebenezer_stocks"
     )
 
-    calculate_portfolio(
+    result <- calculate_portfolio(
       stocks_data,
       ticker_data
     )
+
+    cache_new_row(result, req)
+    result
   }
 }
 
@@ -760,10 +809,14 @@ function(
       table_name = "ebenezer_stocks"
     )
 
-    calculate_portfolio(
+    result <- summarise_portfolio(
       stocks_data,
       ticker_data
     )
+
+    cache_new_row(result, req)
+    result
+
   }
 }
 
@@ -795,10 +848,13 @@ function(
       get_table_data_,
       table_name = "ebenezer_funds"
     )
-    summarise_funds(
+    result <- summarise_funds(
       funds_data,
       ticker_data
     )
+
+    cache_new_row(result, req)
+    result
   }
 }
 
@@ -824,7 +880,9 @@ function(
       get_table_data_,
       table_name = "ebenezer_deposits"
     )
-    summarise_deposits(deposits_data)
+    result <- summarise_deposits(deposits_data)
+    cache_new_row(result, req)
+    result
   }
 }
 
@@ -850,7 +908,9 @@ function(
       get_table_data_,
       table_name = "ebenezer_savings"
     )
-    summarise_savings(savings_data)
+    result <- summarise_savings(savings_data)
+    cache_new_row(result, req)
+    result
   }
 }
 
@@ -876,10 +936,12 @@ function(
       get_table_data_,
       table_name = "ebenezer_mmtc"
     )
-    summarise_mmtc(
+    result <- summarise_mmtc(
       mmtc_data,
       get_mmtc_price()
     )
+    cache_new_row(result, req)
+    result
   }
 }
 
@@ -905,10 +967,12 @@ function(
       get_table_data_,
       table_name = "ebenezer_sgbs"
     )
-    summarise_sgbs(
+    result <- summarise_sgbs(
       sgbs_data,
       get_bullions_price()
     )
+    cache_new_row(result, req)
+    result
   }
 }
 
@@ -1085,7 +1149,9 @@ function(
       "type" = "TOTAL"
     )
 
-    c(list("networth" = totals), networth)
+    result <- c(list("networth" = totals), networth)
+    cache_new_row(result, req)
+    result
   }
 }
 
@@ -1107,12 +1173,14 @@ function(
       req_path = req$PATH_INFO
     )
   } else {
-    auth_helper(
+    result <- auth_helper(
       res,
       req,
       get_table_data_,
       table_name = "chronos_cache"
     )
+    cache_new_row(result, req)
+    result
   }
 }
 
@@ -1134,11 +1202,13 @@ function(
       req_path = req$PATH_INFO
     )
   } else {
-    auth_helper(
+    result <- auth_helper(
       res,
       req,
       get_labelled_tasks_df
     )
+    cache_new_row(result, req)
+    result
   }
 }
 
@@ -1158,10 +1228,12 @@ function(
       req_path = req$PATH_INFO
     )
   } else {
-    auth_helper(
+    result <- auth_helper(
       res,
       req,
       get_tasks_analysis
     )
+    cache_new_row(result, req)
+    result
   }
 }
