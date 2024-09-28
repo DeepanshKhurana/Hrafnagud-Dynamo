@@ -162,6 +162,7 @@ cache_helper <- function(
 
 #* @apiTitle Hrafnagud
 #* @apiDescription An all-seeing API for personal use
+#* @apiTag Health Health-check Endpoint
 #* @apiTag CRUD DynamoDb Utility Endpoints
 #* @apiTag Robin Custom Google Finance Ticker Endpoints
 #* @apiTag Midas Custom Gold Price Crawler Endpoints
@@ -170,6 +171,17 @@ cache_helper <- function(
 #* @apiTag Ebenezer Finance-related Endpoints
 #* @apiTag Fogg Todoist Task-related Endpoints
 #* @apiTag Chronos Google Calendar-related Endpoints
+
+## Health ----
+
+### Health Check ----
+
+#* Health Check
+#* @get /health
+#* @tag Health
+function() {
+  "API is healthy!"
+}
 
 ## CRUD ----
 
