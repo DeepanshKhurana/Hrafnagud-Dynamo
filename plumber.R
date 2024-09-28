@@ -52,7 +52,8 @@ if (database_utils == "supabase") {
       get_table_data,
       get_table_schema,
       put_table_row,
-      delete_table_row
+      delete_table_row,
+      get_staleness
     ],
   )
 }
@@ -181,6 +182,22 @@ cache_helper <- function(
 #* @tag Health
 function() {
   "API is healthy!"
+}
+
+### Cache Staleness ----
+
+#* Cache Staleness
+#* @get /staleness
+#* @tag Health
+function(
+  res,
+  req
+) {
+  auth_helper(
+    res,
+    req,
+    get_staleness
+  )
 }
 
 ## CRUD ----

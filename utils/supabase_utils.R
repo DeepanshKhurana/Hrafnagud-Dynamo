@@ -6,6 +6,9 @@ box::use(
     dbGetQuery,
     dbQuoteLiteral
   ],
+  dplyr[
+    pull
+  ],
   purrr[
     map2
   ],
@@ -432,6 +435,74 @@ delete_table_row <- function(
       "
     )
     dbExecute(conn, delete_query)
+  } else {
+    stop(
+      glue(
+        "Table '{table_name}' does not exist!"
+      )
+    )
+  }
+}
+
+#' Calculate the staleness of the CRON cache
+#' @param cron_time The CRON time object
+#' @return A list containing the timestamp, difference, and status.
+calculate_staleness <- function(
+  cron_time
+) {
+  cron_date <- as.Date(cron_time$created_at)
+  cron_time <- cron_time$cron_time
+  current_time <- format(
+    Sys.time(),
+    "%Y-%m-%d %H:%M:%S"
+  )
+  cron_today <- paste(
+    cron_date,
+    format(cron_time, "%H:%M:%S")
+  )
+  difference <- difftime(
+    current_time,
+    cron_today,
+    units = "mins"
+  ) |>
+    as.numeric()
+  list(
+    cron_timestamp = cron_today,
+    cron_difference = difference,
+    cron_status = if (difference < 60) {
+      "green"
+    } else if (difference < 300 && difference > 60) {
+      "yellow"
+    } else {
+      "red"
+    }
+  )
+}
+
+#' Get the cache age
+#' @param table_name The name of the table.
+#' @param schema The schema name.
+#' @param conn A database connection object.
+#' @return A list containing the cache age and the difference in minutes.
+#' @export
+get_staleness <- function(
+  table_name = "hrafnagud_cache",
+  schema = "hrafnagud",
+  conn = make_connection()
+) {
+  on.exit(dbDisconnect(conn))
+  assert_string(table_name)
+  if (is_valid_table(table_name, conn)) {
+    age_query <- glue(
+      "
+        SELECT created_at, cron_time
+        FROM {schema}.{table_name}
+        ORDER BY created_at DESC
+        LIMIT 1;
+      "
+    )
+    cron_time <- dbGetQuery(conn, age_query)
+    calculate_staleness(cron_time)
   } else {
     stop(
       glue(
