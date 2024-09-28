@@ -1060,6 +1060,25 @@
       ],
       "Hash": "d61238fd44fc63c8adf4565efe8eb682"
     },
+    "supabaseR": {
+      "Package": "supabaseR",
+      "Version": "0.0.0.9000",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "DeepanshKhurana",
+      "RemoteRepo": "supabaseR",
+      "RemoteRef": "main",
+      "RemoteSha": "8229037bc61974d19fe902ce26e67fd40aadec36",
+      "Requirements": [
+        "DBI",
+        "RPostgres",
+        "checkmate",
+        "config",
+        "glue"
+      ],
+      "Hash": "79575ba50556b5b02d327a06d057fae6"
+    },
     "swagger": {
       "Package": "swagger",
       "Version": "3.33.1",
