@@ -50,7 +50,7 @@ box::use(
 #' @param schema The schema name.
 #' @return A data frame with table schema details.
 #' @export
-get_table_schema <- function(
+get_table_schema_ <- function(
   table_name = NULL,
   schema = "hrafnagud"
 ) {
@@ -67,7 +67,7 @@ get_table_schema <- function(
 #' @param schema The schema name.
 #' @return A data frame with table data.
 #' @export
-get_table_data <- function(
+get_table_data_ <- function(
   table_name = NULL,
   limit = 0,
   schema = "hrafnagud"
@@ -86,7 +86,7 @@ get_table_data <- function(
 #' @param is_update Whether the operation is an update.
 #' @param schema The schema name.
 #' @export
-put_table_row <- function(
+put_table_row_ <- function(
   table_name = NULL,
   input_list = list(),
   is_update = FALSE,
@@ -107,7 +107,7 @@ put_table_row <- function(
 #' @param id_column The ID column name.
 #' @param schema The schema name.
 #' @export
-delete_table_row <- function(
+delete_table_row_ <- function(
   table_name = NULL,
   id_value = NULL,
   id_column = "id",
