@@ -139,6 +139,9 @@ cache_helper <- function(
   cache_schema = "hrafnagud",
   cache_columns = list("response")
 ) {
+  if (substr(req_path, 1, 1) == "/") {
+    req_path <- substr(req_path, 2, nchar(req_path))
+  }
   get_table_query(
     cache_table,
     schema = cache_schema,
@@ -308,17 +311,25 @@ function(
 
 #* Trips
 #* @get /livingston/trips
+#* @param cached:bool Whether to use cached data or not
 #* @tag Livingston
 function(
   res,
-  req
+  req,
+  cached = FALSE
 ) {
-  auth_helper(
-    res,
-    req,
-    get_table_data,
-    table_name = "livingston_trips"
-  )
+  if (cached) {
+    cache_helper(
+      req_path = req$PATH_INFO
+    )
+  } else {
+    auth_helper(
+      res,
+      req,
+      get_table_data,
+      table_name = "livingston_trips"
+    )
+  }
 }
 
 ### Details ----
@@ -349,34 +360,42 @@ function(
 
 #* Counts
 #* @get /livingston/counts
+#* @param cached:bool Whether to use cached data or not
 #* @tag Livingston
 function(
   res,
-  req
+  req,
+  cached = FALSE
 ) {
-  data <- auth_helper(
-    res,
-    req,
-    get_table_data,
-    table_name = "livingston_trips"
-  )
-
-  current <- Sys.Date()
-
-  data |>
-    mutate(start = ymd(start_date),
-           end = ymd(end_date)) |>
-    mutate(trip_status = case_when(
-      end < current ~ "Past",
-      start <= current & end >= current ~ "Ongoing",
-      start > current ~ "Upcoming"
-    )) |>
-    group_by(trip_status) |>
-    summarise(trip_count = n()) |>
-    complete(
-      trip_status = c("Past", "Ongoing", "Upcoming"),
-      fill = list(trip_count = 0)
+  if (cached) {
+    cache_helper(
+      req_path = req$PATH_INFO
     )
+  } else {
+    data <- auth_helper(
+      res,
+      req,
+      get_table_data,
+      table_name = "livingston_trips"
+    )
+
+    current <- Sys.Date()
+
+    data |>
+      mutate(start = ymd(start_date),
+             end = ymd(end_date)) |>
+      mutate(trip_status = case_when(
+        end < current ~ "Past",
+        start <= current & end >= current ~ "Ongoing",
+        start > current ~ "Upcoming"
+      )) |>
+      group_by(trip_status) |>
+      summarise(trip_count = n()) |>
+      complete(
+        trip_status = c("Past", "Ongoing", "Upcoming"),
+        fill = list(trip_count = 0)
+      )
+  }
 }
 
 ## Robin ----
@@ -385,34 +404,50 @@ function(
 
 #* Stocks
 #* @get /robin/stocks
+#* @param cached:bool Whether to use cached data or not
 #* @tag Robin
 function(
   res,
-  req
+  req,
+  cached = FALSE
 ) {
-  auth_helper(
-    res,
-    req,
-    load_sheet,
-    sheet_name = "Stocks"
-  )
+  if (cached) {
+    cache_helper(
+      req_path = req$PATH_INFO
+    )
+  } else {
+    auth_helper(
+      res,
+      req,
+      load_sheet,
+      sheet_name = "Stocks"
+    )
+  }
 }
 
 ### Funds ----
 
 #* Funds
 #* @get /robin/funds
+#* @param cached:bool Whether to use cached data or not
 #* @tag Robin
 function(
   res,
-  req
+  req,
+  cached = FALSE
 ) {
-  auth_helper(
-    res,
-    req,
-    load_sheet,
-    sheet_name = "Funds"
-  )
+  if (cached) {
+    cache_helper(
+      req_path = req$PATH_INFO
+    )
+  } else {
+    auth_helper(
+      res,
+      req,
+      load_sheet,
+      sheet_name = "Funds"
+    )
+  }
 }
 
 ## Midas ----
@@ -421,32 +456,48 @@ function(
 
 #* MMTC
 #* @get /midas/mmtc
+#* @param cached:bool Whether to use cached data or not
 #* @tag Midas
 function(
   res,
-  req
+  req,
+  cached = FALSE
 ) {
-  auth_helper(
-    res,
-    req,
-    get_mmtc_price
-  )
+  if (cached) {
+    cache_helper(
+      req_path = req$PATH_INFO
+    )
+  } else {
+    auth_helper(
+      res,
+      req,
+      get_mmtc_price
+    )
+  }
 }
 
 ### Bullions ----
 
 #* Bullions
 #* @get /midas/bullions
+#* @param cached:bool Whether to use cached data or not
 #* @tag Midas
 function(
   res,
-  req
+  req,
+  cached = FALSE
 ) {
-  auth_helper(
-    res,
-    req,
-    get_bullions_price
-  )
+  if (cached) {
+    cache_helper(
+      req_path = req$PATH_INFO
+    )
+  } else {
+    auth_helper(
+      res,
+      req,
+      get_bullions_price
+    )
+  }
 }
 
 ## Ebenezer ----
@@ -455,445 +506,558 @@ function(
 
 #* Stocks
 #* @get /ebenezer/stocks
+#* @param cached:bool Whether to use cached data or not
 #* @tag Ebenezer
 function(
   res,
-  req
+  req,
+  cached = FALSE
 ) {
-  auth_helper(
-    res,
-    req,
-    get_table_data,
-    table_name = "ebenezer_stocks"
-  )
+  if (cached) {
+    cache_helper(
+      req_path = req$PATH_INFO
+    )
+  } else {
+    auth_helper(
+      res,
+      req,
+      get_table_data,
+      table_name = "ebenezer_stocks"
+    )
+  }
 }
 
 ### Mutual Funds ----
 
 #* Mutual Funds
 #* @get /ebenezer/funds
+#* @param cached:bool Whether to use cached data or not
 #* @tag Ebenezer
 function(
   res,
-  req
+  req,
+  cached = FALSE
 ) {
-  ticker_data <- auth_helper(
-    res,
-    req,
-    load_sheet,
-    sheet_name = "Funds"
-  )
+  if (cached) {
+    cache_helper(
+      req_path = req$PATH_INFO
+    )
+  } else {
+    ticker_data <- auth_helper(
+      res,
+      req,
+      load_sheet,
+      sheet_name = "Funds"
+    )
 
-  funds_data <- auth_helper(
-    res,
-    req,
-    get_table_data,
-    table_name = "ebenezer_funds"
-  )
+    funds_data <- auth_helper(
+      res,
+      req,
+      get_table_data,
+      table_name = "ebenezer_funds"
+    )
 
-  calculate_funds(
-    funds_data,
-    ticker_data
-  )
+    calculate_funds(
+      funds_data,
+      ticker_data
+    )
+  }
 }
 
 ### Deposits ----
 
 #* Deposits
 #* @get /ebenezer/deposits
+#* @param cached:bool Whether to use cached data or not
 #* @tag Ebenezer
 function(
   res,
-  req
+  req,
+  cached = FALSE
 ) {
-  auth_helper(
-    res,
-    req,
-    get_table_data,
-    table_name = "ebenezer_deposits"
-  )
+  if (cached) {
+    cache_helper(
+      req_path = req$PATH_INFO
+    )
+  } else {
+    auth_helper(
+      res,
+      req,
+      get_table_data,
+      table_name = "ebenezer_deposits"
+    )
+  }
 }
 
 ### Savings ----
 
 #* Savings
 #* @get /ebenezer/savings
+#* @param cached:bool Whether to use cached data or not
 #* @tag Ebenezer
 function(
   res,
-  req
+  req,
+  cached = FALSE
 ) {
-  auth_helper(
-    res,
-    req,
-    get_table_data,
-    table_name = "ebenezer_savings"
-  )
+  if (cached) {
+    cache_helper(
+      req_path = req$PATH_INFO
+    )
+  } else {
+    auth_helper(
+      res,
+      req,
+      get_table_data,
+      table_name = "ebenezer_savings"
+    )
+  }
 }
 
 ### MMTC ----
 
 #* MMTC
 #* @get /ebenezer/mmtc
+#* @param cached:bool Whether to use cached data or not
 #* @tag Ebenezer
 function(
   res,
-  req
+  req,
+  cached = FALSE
 ) {
-  auth_helper(
-    res,
-    req,
-    get_table_data,
-    table_name = "ebenezer_mmtc"
-  )
+  if (cached) {
+    cache_helper(
+      req_path = req$PATH_INFO
+    )
+  } else {
+    auth_helper(
+      res,
+      req,
+      get_table_data,
+      table_name = "ebenezer_mmtc"
+    )
+  }
 }
 
 ### SGBs ----
 
 #* SGBs
 #* @get /ebenezer/sgbs
+#* @param cached:bool Whether to use cached data or not
 #* @tag Ebenezer
 function(
   res,
-  req
+  req,
+  cached = FALSE
 ) {
-  auth_helper(
-    res,
-    req,
-    get_table_data,
-    table_name = "ebenezer_sgbs"
-  )
+  if (cached) {
+    cache_helper(
+      req_path = req$PATH_INFO
+    )
+  } else {
+    auth_helper(
+      res,
+      req,
+      get_table_data,
+      table_name = "ebenezer_sgbs"
+    )
+  }
 }
 
 ### Portfolio ----
 
 #* Portfolio
 #* @get /ebenezer/portfolio
+#* @param cached:bool Whether to use cached data or not
 #* @tag Ebenezer
 function(
   res,
-  req
+  req,
+  cached = FALSE
 ) {
-  ticker_data <- auth_helper(
-    res,
-    req,
-    load_sheet,
-    sheet_name = "Stocks"
-  )
+  if (cached) {
+    cache_helper(
+      req_path = req$PATH_INFO
+    )
+  } else {
+    ticker_data <- auth_helper(
+      res,
+      req,
+      load_sheet,
+      sheet_name = "Stocks"
+    )
 
-  stocks_data <- auth_helper(
-    res,
-    req,
-    get_table_data,
-    table_name = "ebenezer_stocks"
-  )
+    stocks_data <- auth_helper(
+      res,
+      req,
+      get_table_data,
+      table_name = "ebenezer_stocks"
+    )
 
-  calculate_portfolio(
-    stocks_data,
-    ticker_data
-  )
+    calculate_portfolio(
+      stocks_data,
+      ticker_data
+    )
+  }
 }
 
 ### Stocks (Portfolio) Summary ----
 
 #* Stocks (Portfolio) Summary
 #* @get /ebenezer/summary/stocks
+#* @param cached:bool Whether to use cached data or not
 #* @tag Ebenezer
 function(
   res,
-  req
+  req,
+  cached = FALSE
 ) {
-  ticker_data <- auth_helper(
-    res,
-    req,
-    load_sheet,
-    sheet_name = "Stocks"
-  )
-  stocks_data <- auth_helper(
-    res,
-    req,
-    get_table_data,
-    table_name = "ebenezer_stocks"
-  )
-  portfolio <- summarise_portfolio(
-    stocks_data,
-    ticker_data
-  )
+  if (cached) {
+    cache_helper(
+      req_path = req$PATH_INFO
+    )
+  } else {
+    ticker_data <- auth_helper(
+      res,
+      req,
+      load_sheet,
+      sheet_name = "Stocks"
+    )
+
+    stocks_data <- auth_helper(
+      res,
+      req,
+      get_table_data,
+      table_name = "ebenezer_stocks"
+    )
+
+    calculate_portfolio(
+      stocks_data,
+      ticker_data
+    )
+  }
 }
 
 ### Mutual Funds Summary ----
 
 #* Mutual Funds Summary
 #* @get /ebenezer/summary/funds
+#* @param cached:bool Whether to use cached data or not
 #* @tag Ebenezer
 function(
   res,
-  req
+  req,
+  cached = FALSE
 ) {
-  ticker_data <- auth_helper(
-    res,
-    req,
-    load_sheet,
-    sheet_name = "Funds"
-  )
-  funds_data <- auth_helper(
-    res,
-    req,
-    get_table_data,
-    table_name = "ebenezer_funds"
-  )
-  summarise_funds(
-    funds_data,
-    ticker_data
-  )
+  if (cached) {
+    cache_helper(
+      req_path = req$PATH_INFO
+    )
+  } else {
+    ticker_data <- auth_helper(
+      res,
+      req,
+      load_sheet,
+      sheet_name = "Funds"
+    )
+    funds_data <- auth_helper(
+      res,
+      req,
+      get_table_data,
+      table_name = "ebenezer_funds"
+    )
+    summarise_funds(
+      funds_data,
+      ticker_data
+    )
+  }
 }
 
 ### Deposits Summary ----
 
 #* Deposits Summary
 #* @get /ebenezer/summary/deposits
+#* @param cached:bool Whether to use cached data or not
 #* @tag Ebenezer
 function(
   res,
-  req
+  req,
+  cached = FALSE
 ) {
-  deposits_data <- auth_helper(
-    res,
-    req,
-    get_table_data,
-    table_name = "ebenezer_deposits"
-  )
-  summarise_deposits(deposits_data)
+  if (cached) {
+    cache_helper(
+      req_path = req$PATH_INFO
+    )
+  } else {
+    deposits_data <- auth_helper(
+      res,
+      req,
+      get_table_data,
+      table_name = "ebenezer_deposits"
+    )
+    summarise_deposits(deposits_data)
+  }
 }
 
 ### Savings Summary ----
 
 #* Savings Summary
 #* @get /ebenezer/summary/savings
+#* @param cached:bool Whether to use cached data or not
 #* @tag Ebenezer
 function(
   res,
-  req
+  req,
+  cached = FALSE
 ) {
-  savings_data <- auth_helper(
-    res,
-    req,
-    get_table_data,
-    table_name = "ebenezer_savings"
-  )
-  summarise_savings(savings_data)
+  if (cached) {
+    cache_helper(
+      req_path = req$PATH_INFO
+    )
+  } else {
+    savings_data <- auth_helper(
+      res,
+      req,
+      get_table_data,
+      table_name = "ebenezer_savings"
+    )
+    summarise_savings(savings_data)
+  }
 }
 
 ### MMTC Summary ----
 
 #* MMTC Summary
 #* @get /ebenezer/summary/mmtc
+#* @param cached:bool Whether to use cached data or not
 #* @tag Ebenezer
 function(
   res,
-  req
+  req,
+  cached = FALSE
 ) {
-  mmtc_data <- auth_helper(
-    res,
-    req,
-    get_table_data,
-    table_name = "ebenezer_mmtc"
-  )
-  summarise_mmtc(
-    mmtc_data,
-    get_mmtc_price()
-  )
+  if (cached) {
+    cache_helper(
+      req_path = req$PATH_INFO
+    )
+  } else {
+    mmtc_data <- auth_helper(
+      res,
+      req,
+      get_table_data,
+      table_name = "ebenezer_mmtc"
+    )
+    summarise_mmtc(
+      mmtc_data,
+      get_mmtc_price()
+    )
+  }
 }
 
 ### SGBs Summary ----
 
 #* SGBs Summary
 #* @get /ebenezer/summary/sgbs
+#* @param cached:bool Whether to use cached data or not
 #* @tag Ebenezer
 function(
   res,
-  req
+  req,
+  cached = FALSE
 ) {
-  sgbs_data <- auth_helper(
-    res,
-    req,
-    get_table_data,
-    table_name = "ebenezer_sgbs"
-  )
-  summarise_sgbs(
-    sgbs_data,
-    get_bullions_price()
-  )
+  if (cached) {
+    cache_helper(
+      req_path = req$PATH_INFO
+    )
+  } else {
+    sgbs_data <- auth_helper(
+      res,
+      req,
+      get_table_data,
+      table_name = "ebenezer_sgbs"
+    )
+    summarise_sgbs(
+      sgbs_data,
+      get_bullions_price()
+    )
+  }
 }
 
 ### Networth ----
 
 #* Networth
 #* @get /ebenezer/networth
+#* @param cached:bool Whether to use cached data or not
 #* @tag Ebenezer
 function(
   res,
-  req
+  req,
+  cached = FALSE
 ) {
-
-  sgbs_data <- auth_helper(
-    res,
-    req,
-    get_table_data,
-    table_name = "ebenezer_sgbs"
-  )
-
-  mmtc_data <- auth_helper(
-    res,
-    req,
-    get_table_data,
-    table_name = "ebenezer_mmtc"
-  )
-
-  savings_data <- auth_helper(
-    res,
-    req,
-    get_table_data,
-    table_name = "ebenezer_savings"
-  )
-
-  deposits_data <- auth_helper(
-    res,
-    req,
-    get_table_data,
-    table_name = "ebenezer_deposits"
-  )
-
-  funds_ticker_data <- auth_helper(
-    res,
-    req,
-    load_sheet,
-    sheet_name = "Funds"
-  )
-
-  mutual_funds_data <- auth_helper(
-    res,
-    req,
-    get_table_data,
-    table_name = "ebenezer_funds"
-  )
-
-  stocks_ticker_data <- auth_helper(
-    res,
-    req,
-    load_sheet,
-    sheet_name = "Stocks"
-  )
-
-  stocks_data <- auth_helper(
-    res,
-    req,
-    get_table_data,
-    table_name = "ebenezer_stocks"
-  )
-
-  etfs_data <- stocks_data[
-    stocks_data$stock_symbol %in% c("HDFSIL", "HDFGOL"),
-  ]
-
-  stocks_data <-  stocks_data[
-    !(stocks_data$stock_symbol %in% c("HDFSIL", "HDFGOL")),
-  ]
-
-  debt_funds_data <- mutual_funds_data[
-    mutual_funds_data$name == "Dynamic Bond Fund",
-  ]
-
-  mutual_funds_data <- mutual_funds_data[
-    mutual_funds_data$name != "Dynamic Bond Fund",
-  ]
-
-  networth <- list(
-    "stocks" = c(
-      summarise_portfolio(
-        stocks_data,
-        stocks_ticker_data
-      )[
-        c(
-          "invested",
-          "current"
-        )
-      ],
-      "type" = "EQUITY"
-    ),
-    "etfs" = c(
-      summarise_portfolio(
-        etfs_data,
-        stocks_ticker_data
-      )[
-        c(
-          "invested",
-          "current"
-        )
-      ],
-      "type" = "BULLION"
-    ),
-    "debt_funds" = c(
-      summarise_funds(
-        debt_funds_data,
-        funds_ticker_data
-      ),
-      "type" = "DEBT"
-    ),
-    "mutual_funds" = c(
-      summarise_funds(
-        mutual_funds_data,
-        funds_ticker_data
-      ),
-      "type" = "EQUITY"
-    ),
-    "deposits" = c(
-      summarise_deposits(
-        deposits_data
-      ),
-      "type" = "DEBT"
-    ),
-    "savings" = c(
-      summarise_savings(
-        savings_data
-      ),
-      "type" = "DEBT"
-    ),
-    "mmtc" = c(
-      summarise_mmtc(
-        mmtc_data,
-        get_mmtc_price()
-      ),
-      "type" = "BULLION"
-    ),
-    "sgbs" = c(
-      summarise_sgbs(
-        sgbs_data,
-        get_bullions_price()
-      ),
-      "type" = "BULLION"
+  if (cached) {
+    cache_helper(
+      req_path = req$PATH_INFO
     )
-  )
+  } else {
+    sgbs_data <- auth_helper(
+      res,
+      req,
+      get_table_data,
+      table_name = "ebenezer_sgbs"
+    )
 
-  totals <- list(
-    "invested" = lapply(
-      networth,
-      function(asset) asset$invested
-    ) |>
-      unlist() |>
-      as.numeric() |>
-      sum(),
-    "current" = lapply(
-      networth,
-      function(asset) asset$current
-    ) |>
-      unlist() |>
-      as.numeric() |>
-      sum(),
-    "type" = "TOTAL"
-  )
+    mmtc_data <- auth_helper(
+      res,
+      req,
+      get_table_data,
+      table_name = "ebenezer_mmtc"
+    )
 
-  c(list("networth" = totals), networth)
+    savings_data <- auth_helper(
+      res,
+      req,
+      get_table_data,
+      table_name = "ebenezer_savings"
+    )
+
+    deposits_data <- auth_helper(
+      res,
+      req,
+      get_table_data,
+      table_name = "ebenezer_deposits"
+    )
+
+    funds_ticker_data <- auth_helper(
+      res,
+      req,
+      load_sheet,
+      sheet_name = "Funds"
+    )
+
+    mutual_funds_data <- auth_helper(
+      res,
+      req,
+      get_table_data,
+      table_name = "ebenezer_funds"
+    )
+
+    stocks_ticker_data <- auth_helper(
+      res,
+      req,
+      load_sheet,
+      sheet_name = "Stocks"
+    )
+
+    stocks_data <- auth_helper(
+      res,
+      req,
+      get_table_data,
+      table_name = "ebenezer_stocks"
+    )
+
+    etfs_data <- stocks_data[
+      stocks_data$stock_symbol %in% c("HDFSIL", "HDFGOL"),
+    ]
+
+    stocks_data <-  stocks_data[
+      !(stocks_data$stock_symbol %in% c("HDFSIL", "HDFGOL")),
+    ]
+
+    debt_funds_data <- mutual_funds_data[
+      mutual_funds_data$name == "Dynamic Bond Fund",
+    ]
+
+    mutual_funds_data <- mutual_funds_data[
+      mutual_funds_data$name != "Dynamic Bond Fund",
+    ]
+
+    networth <- list(
+      "stocks" = c(
+        summarise_portfolio(
+          stocks_data,
+          stocks_ticker_data
+        )[
+          c(
+            "invested",
+            "current"
+          )
+        ],
+        "type" = "EQUITY"
+      ),
+      "etfs" = c(
+        summarise_portfolio(
+          etfs_data,
+          stocks_ticker_data
+        )[
+          c(
+            "invested",
+            "current"
+          )
+        ],
+        "type" = "BULLION"
+      ),
+      "debt_funds" = c(
+        summarise_funds(
+          debt_funds_data,
+          funds_ticker_data
+        ),
+        "type" = "DEBT"
+      ),
+      "mutual_funds" = c(
+        summarise_funds(
+          mutual_funds_data,
+          funds_ticker_data
+        ),
+        "type" = "EQUITY"
+      ),
+      "deposits" = c(
+        summarise_deposits(
+          deposits_data
+        ),
+        "type" = "DEBT"
+      ),
+      "savings" = c(
+        summarise_savings(
+          savings_data
+        ),
+        "type" = "DEBT"
+      ),
+      "mmtc" = c(
+        summarise_mmtc(
+          mmtc_data,
+          get_mmtc_price()
+        ),
+        "type" = "BULLION"
+      ),
+      "sgbs" = c(
+        summarise_sgbs(
+          sgbs_data,
+          get_bullions_price()
+        ),
+        "type" = "BULLION"
+      )
+    )
+
+    totals <- list(
+      "invested" = lapply(
+        networth,
+        function(asset) asset$invested
+      ) |>
+        unlist() |>
+        as.numeric() |>
+        sum(),
+      "current" = lapply(
+        networth,
+        function(asset) asset$current
+      ) |>
+        unlist() |>
+        as.numeric() |>
+        sum(),
+      "type" = "TOTAL"
+    )
+
+    c(list("networth" = totals), networth)
+  }
 }
 
 ## Chronos ----
@@ -902,17 +1066,25 @@ function(
 
 #* Events
 #* @get /chronos/events
+#* @param cached:bool Whether to use cached data or not
 #* @tag Chronos
 function(
   res,
-  req
+  req,
+  cached = FALSE
 ) {
-  auth_helper(
-    res,
-    req,
-    get_table_data,
-    table_name = "chronos_cache"
-  )
+  if (cached) {
+    cache_helper(
+      req_path = req$PATH_INFO
+    )
+  } else {
+    auth_helper(
+      res,
+      req,
+      get_table_data,
+      table_name = "chronos_cache"
+    )
+  }
 }
 
 ## Fogg ----
@@ -921,30 +1093,46 @@ function(
 
 #* Today's Tasks
 #* @get /fogg/tasks
+#* @param cached:bool Whether to use cached data or not
 #* @tag Fogg
 function(
   res,
-  req
+  req,
+  cached = FALSE
 ) {
-  auth_helper(
-    res,
-    req,
-    get_labelled_tasks_df
-  )
+  if (cached) {
+    cache_helper(
+      req_path = req$PATH_INFO
+    )
+  } else {
+    auth_helper(
+      res,
+      req,
+      get_labelled_tasks_df
+    )
+  }
 }
 
 ### Today's Task Analysis ----
 
 #* Today's Task Analysis
 #* @get /fogg/analysis
+#* @param cached:bool Whether to use cached data or not
 #* @tag Fogg
 function(
   res,
-  req
+  req,
+  cached = FALSE
 ) {
-  auth_helper(
-    res,
-    req,
-    get_tasks_analysis
-  )
+  if (cached) {
+    cache_helper(
+      req_path = req$PATH_INFO
+    )
+  } else {
+    auth_helper(
+      res,
+      req,
+      get_tasks_analysis
+    )
+  }
 }
