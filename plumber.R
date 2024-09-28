@@ -28,6 +28,12 @@ box::use(
   checkmate[
     assert_subset
   ],
+  jsonlite[
+    fromJSON
+  ],
+  supabaseR[
+    get_table_query
+  ],
 )
 
 database_utils <- get("database_utils")
@@ -117,6 +123,38 @@ auth_helper <- function(
   }
 }
 
+#' Retrieve cached API response from a database
+#'
+#' Fetches the most recent cached response from the specified cache table
+#'
+#' @param req_path Character. The request path for the cached response
+#' @param cache_table Character. The name of the cache table
+#' @param cache_schema Character. The schema of the cache table
+#' @param cache_columns List. The columns to retrieve from the cache table
+#'
+#' @return A parsed JSON object representing the cached response
+cache_helper <- function(
+  req_path = NULL,
+  cache_table = "hrafnagud_cache",
+  cache_schema = "hrafnagud",
+  cache_columns = list("response")
+) {
+  get_table_query(
+    cache_table,
+    schema = cache_schema,
+    columns = cache_columns,
+    filter_query = list(
+      glue(
+        "WHERE endpoint = '{req_path}'"
+      ),
+      "ORDER BY created_at DESC",
+      "LIMIT 1"
+    )
+  ) |>
+    as.character() |>
+    fromJSON()
+}
+
 # API Spec ----
 
 #* @apiTitle Hrafnagud
@@ -149,7 +187,6 @@ function(
     get_table_schema,
     table_name = table_name
   )
-
 }
 
 ### Create ----
