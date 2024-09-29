@@ -926,13 +926,13 @@
     },
     "renv": {
       "Package": "renv",
-      "Version": "1.0.3",
+      "Version": "1.0.9",
       "Source": "Repository",
-      "Repository": "CRAN",
+      "Repository": "RSPM",
       "Requirements": [
         "utils"
       ],
-      "Hash": "41b847654f567341725473431dd0d5ab"
+      "Hash": "ef233f0e9064fc88c898b340c9add5c2"
     },
     "rex": {
       "Package": "rex",
@@ -1058,11 +1058,11 @@
       "Version": "0.0.0.9001",
       "Source": "GitHub",
       "RemoteType": "github",
-      "RemoteHost": "api.github.com",
       "RemoteUsername": "DeepanshKhurana",
       "RemoteRepo": "supabaseR",
       "RemoteRef": "main",
-      "RemoteSha": "537fb802339ad0e24e142f3942cdf0069d227f9e",
+      "RemoteSha": "242d21af04f7692e866a9a5ce308924b367228cc",
+      "RemoteHost": "api.github.com",
       "Requirements": [
         "DBI",
         "RPostgres",
@@ -1071,7 +1071,7 @@
         "glue",
         "jsonlite"
       ],
-      "Hash": "c3f16baadd67fbfc3ab06c2de0f31438"
+      "Hash": "b5fac562d51b2b79a534f804969716f5"
     },
     "swagger": {
       "Package": "swagger",
