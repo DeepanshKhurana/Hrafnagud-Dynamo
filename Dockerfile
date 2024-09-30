@@ -1,4 +1,4 @@
-FROM rocker/r-base
+FROM rocker/r-ver
 
 RUN R -e "install.packages('renv')"
 
