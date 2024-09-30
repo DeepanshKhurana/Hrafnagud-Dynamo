@@ -2,6 +2,13 @@ box::use(
   supabaseR[
     get_table_query,
   ],
+  glue[
+    glue
+  ],
+  checkmate[
+    assert,
+    check_string
+  ]
 )
 
 #' Calculate the staleness of the CRON cache
@@ -40,14 +47,22 @@ calculate_staleness <- function(
 }
 
 #' Get the cache age
+#' @param endpoint The endpoint to check the age of.
 #' @param table_name The name of the table.
 #' @param schema The schema name.
 #' @return A list containing the cache age and the difference in minutes.
 #' @export
 get_staleness <- function(
+  endpoint = NULL,
   table_name = "hrafnagud_cache",
-  schema = "hrafnagud"
+  schema = Sys.getenv("SUPABASE_SCHEMA")
 ) {
+  assert(
+    check_string(endpoint),
+    check_string(table_name),
+    check_string(schema),
+    combine = "and"
+  )
   cron_time <- get_table_query(
     table_name = table_name,
     schema = schema,
@@ -56,6 +71,7 @@ get_staleness <- function(
       "cron_time"
     ),
     filter_query = list(
+      glue("WHERE endpoint = '{endpoint}'"),
       "ORDER BY created_at DESC",
       "LIMIT 1"
     )

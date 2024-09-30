@@ -200,15 +200,18 @@ function() {
 
 #* Cache Staleness
 #* @get /staleness
+#* @param endpoint:chr The endpoint to check the age of
 #* @tag Health
 function(
   res,
-  req
+  req,
+  endpoint
 ) {
   auth_helper(
     res,
     req,
-    get_staleness
+    get_staleness,
+    endpoint
   )
 }
 
