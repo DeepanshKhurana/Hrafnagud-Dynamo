@@ -17,7 +17,12 @@ box::use(
 calculate_staleness <- function(
   cron_time
 ) {
-  cron_date <- as.Date(cron_time$created_at)
+  cron_date <- as.Date(
+    format(
+      cron_time$created_at,
+      tz = Sys.getenv("TZ")
+    )
+  )
   cron_time <- cron_time$cron_time
   current_time <- format(
     Sys.time(),
