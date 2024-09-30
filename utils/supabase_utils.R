@@ -21,7 +21,8 @@ calculate_staleness <- function(
   cron_time <- cron_time$cron_time
   current_time <- format(
     Sys.time(),
-    "%Y-%m-%d %H:%M:%S"
+    "%Y-%m-%d %H:%M:%S",
+    tz = Sys.getenv("TZ")
   )
   cron_today <- paste(
     cron_date,
