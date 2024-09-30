@@ -362,7 +362,7 @@ function(
   req,
   cached = FALSE
 ) {
-  if (cached) {
+  if (as.logical(cached)) {
     cache_helper(
       req_path = req$PATH_INFO
     )
@@ -411,7 +411,7 @@ function(
   req,
   cached = FALSE
 ) {
-  if (cached) {
+  if (as.logical(cached)) {
     cache_helper(
       req_path = req$PATH_INFO
     )
@@ -458,7 +458,7 @@ function(
   req,
   cached = FALSE
 ) {
-  if (cached) {
+  if (as.logical(cached)) {
     cache_helper(
       req_path = req$PATH_INFO
     )
@@ -485,7 +485,7 @@ function(
   req,
   cached = FALSE
 ) {
-  if (cached) {
+  if (as.logical(cached)) {
     cache_helper(
       req_path = req$PATH_INFO
     )
@@ -514,7 +514,7 @@ function(
   req,
   cached = FALSE
 ) {
-  if (cached) {
+  if (as.logical(cached)) {
     cache_helper(
       req_path = req$PATH_INFO
     )
@@ -540,7 +540,7 @@ function(
   req,
   cached = FALSE
 ) {
-  if (cached) {
+  if (as.logical(cached)) {
     cache_helper(
       req_path = req$PATH_INFO
     )
@@ -568,7 +568,7 @@ function(
   req,
   cached = FALSE
 ) {
-  if (cached) {
+  if (as.logical(cached)) {
     cache_helper(
       req_path = req$PATH_INFO
     )
@@ -595,7 +595,7 @@ function(
   req,
   cached = FALSE
 ) {
-  if (cached) {
+  if (as.logical(cached)) {
     cache_helper(
       req_path = req$PATH_INFO
     )
@@ -635,7 +635,7 @@ function(
   req,
   cached = FALSE
 ) {
-  if (cached) {
+  if (as.logical(cached)) {
     cache_helper(
       req_path = req$PATH_INFO
     )
@@ -662,7 +662,7 @@ function(
   req,
   cached = FALSE
 ) {
-  if (cached) {
+  if (as.logical(cached)) {
     cache_helper(
       req_path = req$PATH_INFO
     )
@@ -689,7 +689,7 @@ function(
   req,
   cached = FALSE
 ) {
-  if (cached) {
+  if (as.logical(cached)) {
     cache_helper(
       req_path = req$PATH_INFO
     )
@@ -716,7 +716,7 @@ function(
   req,
   cached = FALSE
 ) {
-  if (cached) {
+  if (as.logical(cached)) {
     cache_helper(
       req_path = req$PATH_INFO
     )
@@ -743,7 +743,7 @@ function(
   req,
   cached = FALSE
 ) {
-  if (cached) {
+  if (as.logical(cached)) {
     cache_helper(
       req_path = req$PATH_INFO
     )
@@ -783,7 +783,7 @@ function(
   req,
   cached = FALSE
 ) {
-  if (cached) {
+  if (as.logical(cached)) {
     cache_helper(
       req_path = req$PATH_INFO
     )
@@ -824,7 +824,7 @@ function(
   req,
   cached = FALSE
 ) {
-  if (cached) {
+  if (as.logical(cached)) {
     cache_helper(
       req_path = req$PATH_INFO
     )
@@ -862,7 +862,7 @@ function(
   req,
   cached = FALSE
 ) {
-  if (cached) {
+  if (as.logical(cached)) {
     cache_helper(
       req_path = req$PATH_INFO
     )
@@ -890,7 +890,7 @@ function(
   req,
   cached = FALSE
 ) {
-  if (cached) {
+  if (as.logical(cached)) {
     cache_helper(
       req_path = req$PATH_INFO
     )
@@ -918,7 +918,7 @@ function(
   req,
   cached = FALSE
 ) {
-  if (cached) {
+  if (as.logical(cached)) {
     cache_helper(
       req_path = req$PATH_INFO
     )
@@ -949,7 +949,7 @@ function(
   req,
   cached = FALSE
 ) {
-  if (cached) {
+  if (as.logical(cached)) {
     cache_helper(
       req_path = req$PATH_INFO
     )
@@ -980,7 +980,7 @@ function(
   req,
   cached = FALSE
 ) {
-  if (cached) {
+  if (as.logical(cached)) {
     cache_helper(
       req_path = req$PATH_INFO
     )
@@ -1161,7 +1161,7 @@ function(
   req,
   cached = FALSE
 ) {
-  if (cached) {
+  if (as.logical(cached)) {
     cache_helper(
       req_path = req$PATH_INFO
     )
@@ -1190,7 +1190,7 @@ function(
   req,
   cached = FALSE
 ) {
-  if (cached) {
+  if (as.logical(cached)) {
     cache_helper(
       req_path = req$PATH_INFO
     )
@@ -1216,7 +1216,7 @@ function(
   req,
   cached = FALSE
 ) {
-  if (cached) {
+  if (as.logical(cached)) {
     cache_helper(
       req_path = req$PATH_INFO
     )
