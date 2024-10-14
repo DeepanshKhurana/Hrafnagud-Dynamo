@@ -4,12 +4,15 @@ box::use(
     get
   ],
   dplyr[
-    mutate,
+    arrange,
     case_when,
-    summarise,
+    filter,
     group_by,
+    mutate,
     n,
-    select
+    select,
+    slice,
+    summarise
   ],
   lubridate[
     ymd,
@@ -439,6 +442,58 @@ function(
         trip_status = c("Past", "Ongoing", "Upcoming"),
         fill = list(trip_count = 0)
       )
+
+    cache_new_row(result, req)
+    result
+  }
+}
+
+### Soonest ----
+
+#* Soonest
+#* @get /livingston/soonest
+#* @param cached:bool Whether to use cached data or not
+#* @tag Livingston
+function(
+  res,
+  req,
+  cached = FALSE
+) {
+  if (as.logical(cached)) {
+    cache_helper(
+      req_path = req$PATH_INFO
+    )
+  } else {
+    result <- auth_helper(
+      res,
+      req,
+      get_table_data,
+      table_name = "livingston_trips"
+    )
+
+    result <- result |>
+      mutate(start_date = as.Date(start_date)) |>
+      filter(start_date >= Sys.Date()) |>
+      arrange(start_date) %>%
+      slice(1)
+
+    if (nrow(result) == 0) {
+      result <- NULL
+      countdown <- NULL
+    } else {
+      countdown <- as.numeric(
+        difftime(
+          result$start_date,
+          Sys.Date(),
+          units = "days"
+        )
+      )
+    }
+
+    result <- list(
+      "trip" = result,
+      "countdown" = countdown
+    )
 
     cache_new_row(result, req)
     result
