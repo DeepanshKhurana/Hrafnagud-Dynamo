@@ -612,6 +612,37 @@ function(
 
 ## Ebenezer ----
 
+### Estate ----
+
+#* Estate
+#* @get /ebenezer/estate
+#* @param cached:bool Whether to use cached data or not
+#* @tag Ebenezer
+function(
+  res,
+  req,
+  cached = FALSE
+) {
+  if (as.logical(cached)) {
+    cache_helper(
+      req_path = req$PATH_INFO
+    )
+  } else {
+    result <- auth_helper(
+      res,
+      req,
+      get_table_data,
+      table_name = "ebenezer_estate"
+    ) |>
+      mutate(
+        bought_value = area * bought_rate,
+        current_value = area * market_rate
+      )
+    cache_new_row(result, req)
+    result
+  }
+}
+
 ### Stocks ----
 
 #* Stocks
