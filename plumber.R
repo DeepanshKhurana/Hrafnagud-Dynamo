@@ -83,7 +83,9 @@ box::use(
     summarise_deposits,
     summarise_savings,
     summarise_mmtc,
-    summarise_sgbs
+    summarise_sgbs,
+    summarise_loans,
+    summarise_estate
   ],
 utils/fogg_utils[ # nolint
     get_labelled_tasks_df,
