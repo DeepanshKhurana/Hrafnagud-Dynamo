@@ -633,3 +633,43 @@ summarise_sgbs <- function(
     )
   )
 }
+
+#' Process the loans data
+#' @param loan_data the loans data being fetched from the API
+#' @export
+summarise_loans <- function(
+  loan_data
+) {
+  list(
+    "invested" = -1 * sum(
+      as.numeric(
+        loan_data$principal_amount
+      )
+    ),
+    "current" = -1 * sum(
+      as.numeric(
+        loan_data$leftover_amount
+      )
+    )
+  )
+}
+
+#' Summarise the estate data
+#' @param estate_data the estate data being fetched from the API
+#' @export
+summarise_estate <- function(
+  estate_data
+) {
+  list(
+    "invested" = sum(
+      as.numeric(
+        estate_data$bought_value
+      )
+    ),
+    "current" = sum(
+      as.numeric(
+        estate_data$market_value
+      )
+    )
+  )
+}

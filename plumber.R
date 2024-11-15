@@ -45,6 +45,10 @@ box::use(
   ],
 )
 
+options(
+  scipen = 999999999
+)
+
 database_utils <- get("database_utils")
 
 assert_subset(
@@ -1173,6 +1177,27 @@ function(
       mutual_funds_data$name != "Dynamic Bond Fund",
     ]
 
+    estate_data <- auth_helper(
+      res,
+      req,
+      get_table_data,
+      table_name = "ebenezer_estate"
+    ) |>
+      mutate(
+        bought_value = area * bought_rate,
+        market_value = area * market_rate
+      )
+
+    loan_data <- auth_helper(
+      res,
+      req,
+      get_table_data,
+      table_name = "ebenezer_loans"
+    ) |>
+      mutate(
+        leftover_amount = principal_amount - paid_amount
+      )
+
     networth <- list(
       "stocks" = c(
         summarise_portfolio(
@@ -1237,6 +1262,18 @@ function(
           get_bullions_price()
         ),
         "type" = "BULLION"
+      ),
+      "estate" = c(
+        summarise_estate(
+          estate_data
+        ),
+        "type" = "PROPERTY"
+      ),
+      "loans" = c(
+        summarise_loans(
+          loan_data
+        ),
+        "type" = "LOAN"
       )
     )
 
