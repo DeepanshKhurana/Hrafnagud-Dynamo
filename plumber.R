@@ -612,6 +612,36 @@ function(
 
 ## Ebenezer ----
 
+### Loans ----
+
+#* Loans
+#* @get /ebenezer/loans
+#* @param cached:bool Whether to use cached data or not
+#* @tag Ebenezer
+function(
+  res,
+  req,
+  cached = FALSE
+) {
+  if (as.logical(cached)) {
+    cache_helper(
+      req_path = req$PATH_INFO
+    )
+  } else {
+    result <- auth_helper(
+      res,
+      req,
+      get_table_data,
+      table_name = "ebenezer_loans"
+    ) |>
+      mutate(
+        leftover_amount = principal_amount - paid_amount
+      )
+    cache_new_row(result, req)
+    result
+  }
+}
+
 ### Estate ----
 
 #* Estate
@@ -636,7 +666,7 @@ function(
     ) |>
       mutate(
         bought_value = area * bought_rate,
-        current_value = area * market_rate
+        market_value = area * market_rate
       )
     cache_new_row(result, req)
     result
