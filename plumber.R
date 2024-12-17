@@ -71,11 +71,11 @@ box::use(
   utils/robin_utils[ # nolint
     load_sheet
   ],
- utils/midas_utils[ # nolint
+  utils/midas_utils[ # nolint
     get_mmtc_price,
     get_bullions_price
   ],
- utils/ebenezer_utils[ # nolint
+  utils/ebenezer_utils[ # nolint
     calculate_portfolio,
     summarise_portfolio,
     calculate_funds,
@@ -87,12 +87,15 @@ box::use(
     summarise_loans,
     summarise_estate
   ],
-utils/fogg_utils[ # nolint
+  utils/fogg_utils[ # nolint
     get_labelled_tasks_df,
     get_tasks_analysis
   ],
-utils/icarus_utils[ #nolint
+  utils/icarus_utils[ #nolint
     get_flight_data
+  ],
+  utils/webster_utils[ #nolint
+    get_word_of_the_day
   ],
 )
 
@@ -193,6 +196,7 @@ cache_new_row <- function(
 #* @apiTag Ebenezer Finance-related Endpoints
 #* @apiTag Fogg Todoist Task-related Endpoints
 #* @apiTag Chronos Google Calendar-related Endpoints
+#* @apiTag Webster Merriam-Webster Crawler Endpoints
 
 ## Health ----
 
@@ -1380,6 +1384,34 @@ function(
       res,
       req,
       get_tasks_analysis
+    )
+    cache_new_row(result, req)
+    result
+  }
+}
+
+## Webster ----
+
+### Word of the Day ----
+
+#* Word of the Day (not cached)
+#* @get /webster/today
+#* @param cached:bool Whether to use cached data or not
+#* @tag Webster
+function(
+  res,
+  req,
+  cached = FALSE
+) {
+  if (as.logical(cached)) {
+    cache_helper(
+      req_path = req$PATH_INFO
+    )
+  } else {
+    result <- auth_helper(
+      res,
+      req,
+      get_word_of_the_day
     )
     cache_new_row(result, req)
     result
