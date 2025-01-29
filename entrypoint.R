@@ -1,6 +1,7 @@
 box::use(
   plumber[
     pr,
+    pr_hook,
     pr_run,
     pr_set_api_spec
   ],
@@ -42,6 +43,17 @@ add_auth <- function(
 
 pr("plumber.R") |> #nolint
   pr_set_api_spec(add_auth) |>
+  pr_hook("preroute", function(req, res) {
+    res$setHeader("Access-Control-Allow-Origin", "http://localhost:1234")
+    res$setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+    res$setHeader("Access-Control-Allow-Headers", "X-API-KEY, Accept")
+    res$setHeader("Access-Control-Allow-Credentials", "true")
+    if (req$REQUEST_METHOD == "OPTIONS") {
+      res$status <- 200
+      return(list())
+    }
+    plumber::forward()
+  }) |>
   pr_run(
     port = 8008,
     host = "0.0.0.0"
