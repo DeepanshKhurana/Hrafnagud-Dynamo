@@ -15,6 +15,12 @@ I especially want you to take the DynamoDb CRUD API and see what you can build f
 
 ![Hrafnagud](Hrafnagud-Diagram.png)
 
+## Example Dashboard
+
+Here is what you might be able to build using this API and a simple UI layer.
+
+![image](https://github.com/user-attachments/assets/8b7534b9-9a91-47e5-8204-44c77ce4e94e)
+
 ## Full Story
 
 Over a year ago, I saw a problem. I wanted to track my financial growth, how everything was performing, what was my total networth across instruments, but all apps I saw were bloated at best and would surely sell my information at worst. So, I set out to understand financial calculations and metrics, became an expert in it overnight (haha!) and built myself an app called Ebenezer (named for Ebenezer Scrooge).
