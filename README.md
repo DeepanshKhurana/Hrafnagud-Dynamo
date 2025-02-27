@@ -19,7 +19,7 @@ I especially want you to take the DynamoDb CRUD API and see what you can build f
 
 Here is what you might be able to build using this API and a simple UI layer.
 
-![image](https://github.com/user-attachments/assets/8b7534b9-9a91-47e5-8204-44c77ce4e94e)
+![image](https://github.com/user-attachments/assets/694b5fe2-dea2-457c-a620-2e6d630f94c0)
 
 ## Full Story
 
