@@ -46,7 +46,7 @@ box::use(
 )
 
 options(
-  scipen = 999999999
+  scipen = 999
 )
 
 database_utils <- get("database_utils")
