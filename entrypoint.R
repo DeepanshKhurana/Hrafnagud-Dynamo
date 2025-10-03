@@ -53,8 +53,4 @@ pr("plumber.R") |> #nolint
       return(list())
     }
     plumber::forward()
-  }) |>
-  pr_run(
-    port = 8008,
-    host = "0.0.0.0"
-  )
+  })
