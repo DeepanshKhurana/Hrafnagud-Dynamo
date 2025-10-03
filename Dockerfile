@@ -1,27 +1,34 @@
 FROM rocker/r-ver
 
-RUN R -e "install.packages('renv')"
+RUN R -e "install.packages('renv', repos='https://cloud.r-project.org')"
 
 RUN apt-get update && apt-get install -y \
-    libcurl4-gnutls-dev \
+    curl \
+    build-essential \
+    pkg-config \
     libssl-dev \
+    libcurl4-gnutls-dev \
     libxml2-dev \
     libpq-dev \
     libv8-dev \
-    libsodium-dev
+    libsodium-dev \
+    libuv1-dev \
+    zlib1g-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
 
-RUN cargo install faucet-server
+RUN . "$HOME/.cargo/env"; rustc --version && cargo --version
+
+RUN . "$HOME/.cargo/env"; cargo install faucet-server
 
 COPY . /usr/local/Hrafnagud-Dynamo/
-
 WORKDIR /usr/local/Hrafnagud-Dynamo/
 
 RUN R -e "source('.Rprofile')"
-
 RUN R -e "renv::restore()"
 
 EXPOSE 8008
 
-CMD ["R", "-e", "source('/usr/local/Hrafnagud-Dynamo/entrypoint.R')"]
+CMD ["bash", "-lc", "faucet --host 0.0.0.0:8008 start --dir ."]
