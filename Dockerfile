@@ -10,6 +10,10 @@ RUN apt-get update && apt-get install -y \
     libv8-dev \
     libsodium-dev
 
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+RUN cargo install faucet-server
+
 COPY . /usr/local/Hrafnagud-Dynamo/
 
 WORKDIR /usr/local/Hrafnagud-Dynamo/
