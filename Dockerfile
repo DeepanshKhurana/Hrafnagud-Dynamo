@@ -14,10 +14,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     libv8-dev \
     libsodium-dev \
     libuv1-dev \
-    zlib1g-dev \
- && curl -fsSL https://supabase-downloads.s3-ap-southeast-1.amazonaws.com/prod/ssl/prod-ca-2021.crt -o /usr/local/share/ca-certificates/supabase-prod-ca-2021.crt \
- && update-ca-certificates \
- && rm -rf /var/lib/apt/lists/*
+    zlib1g-dev
 
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
