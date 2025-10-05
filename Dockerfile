@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1.7
+
 FROM rocker/r-ver
 
 RUN R -e "install.packages('renv', repos='https://cloud.r-project.org')"
@@ -17,6 +19,13 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     zlib1g-dev \
     git
 
+COPY . /usr/local/Hrafnagud-Dynamo/
+WORKDIR /usr/local/Hrafnagud-Dynamo/
+
+RUN R -e "source('.Rprofile')"
+RUN --mount=type=cache,target=/renv/cache,id=renv-cache \
+    R -e "renv::restore(prompt = FALSE)"
+
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
 RUN . "$HOME/.cargo/env"; rustc --version && cargo --version
@@ -25,12 +34,6 @@ RUN git clone https://github.com/DeepanshKhurana/faucet.git /tmp/faucet \
     && cd /tmp/faucet \
     && git checkout feat/ssl-friendly-postgres \
     && cargo install --path .
-
-COPY . /usr/local/Hrafnagud-Dynamo/
-WORKDIR /usr/local/Hrafnagud-Dynamo/
-
-RUN R -e "source('.Rprofile')"
-RUN R -e "renv::restore()"
 
 EXPOSE 8008
 
