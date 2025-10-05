@@ -14,12 +14,17 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     libv8-dev \
     libsodium-dev \
     libuv1-dev \
-    zlib1g-dev
+    zlib1g-dev \
+    git
 
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
 RUN . "$HOME/.cargo/env"; rustc --version && cargo --version
-RUN . "$HOME/.cargo/env"; cargo install faucet-server
+
+RUN git clone https://github.com/DeepanshKhurana/faucet.git /tmp/faucet \
+    && cd /tmp/faucet \
+    && git checkout feat/ssl-friendly-postgres \
+    && cargo install --path .
 
 COPY . /usr/local/Hrafnagud-Dynamo/
 WORKDIR /usr/local/Hrafnagud-Dynamo/
