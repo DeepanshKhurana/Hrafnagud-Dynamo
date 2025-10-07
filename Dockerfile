@@ -36,6 +36,9 @@ WORKDIR /usr/local/Hrafnagud-Dynamo/
 RUN R -e "source('.Rprofile')"
 RUN --mount=type=cache,target=/renv/cache,id=renv-cache \
     R -e "renv::restore(prompt = FALSE)"
+RUN R -e "install.packages(devtools)"
+RUN R -e "devtools::install_github('DeepanshKhurana/supabaseR')"
+RUN R -e "renv::repair()"
 
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
