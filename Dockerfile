@@ -42,12 +42,12 @@ ENV PATH="/root/.cargo/bin:${PATH}"
 RUN . "$HOME/.cargo/env"; rustc --version && cargo --version
 
 COPY --from=creds /tmp/Hrafnagud-Creds /tmp/Hrafnagud-Creds
-RUN mkdir -p /root/Hrafnagud-Dynamo && \
-    touch /root/Hrafnagud-Dynamo/.Renviron && \
+RUN mkdir -p /usr/local/Hrafnagud-Dynamo && \
     touch /usr/local/Hrafnagud-Dynamo/.Renviron && \
-    cp /tmp/Hrafnagud-Creds/creds.txt /root/Hrafnagud-Dynamo/.Renviron && \
-    cp /tmp/Hrafnagud-Creds/ebenezer_service_account.json /root/Hrafnagud-Dynamo/.service_account && \
-    cp /tmp/Hrafnagud-Creds/supabase.crt /root/Hrafnagud-Dynamo/supabase.crt && \
+    touch /usr/local/Hrafnagud-Dynamo/.Renviron && \
+    cp /tmp/Hrafnagud-Creds/creds.txt /usr/local/Hrafnagud-Dynamo/.Renviron && \
+    cp /tmp/Hrafnagud-Creds/ebenezer_service_account.json /usr/local/Hrafnagud-Dynamo/.service_account && \
+    cp /tmp/Hrafnagud-Creds/supabase.crt /usr/local/Hrafnagud-Dynamo/supabase.crt && \
     echo "" >> /usr/local/Hrafnagud-Dynamo/.Renviron && \
     cat /tmp/Hrafnagud-Creds/api.txt >> /usr/local/Hrafnagud-Dynamo/.Renviron && \
     rm -rf /tmp/Hrafnagud-Creds
