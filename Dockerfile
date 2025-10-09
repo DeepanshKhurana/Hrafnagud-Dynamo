@@ -1,77 +1,45 @@
 # syntax=docker/dockerfile:1.7
 
-FROM rocker/r-ver AS build
+FROM alpine/git:latest AS gh
+RUN apk add --no-cache openssh-client
+RUN --mount=type=ssh \
+    mkdir -p /root/.ssh && \
+    ssh-keyscan -t rsa,ed25519 github.com >> /root/.ssh/known_hosts && \
+    git clone --depth 1 https://github.com/DeepanshKhurana/supabaseR.git /tmp/supabaseR && \
+    git clone --depth 1 https://github.com/DeepanshKhurana/ical.git /tmp/ical && \
+    git clone --branch feat/ssl-friendly-postgres --depth 1 https://github.com/DeepanshKhurana/faucet.git /tmp/faucet
 
-ENV TZ=Asia/Kolkata
+FROM rocker/r-ver:latest AS app
+ENV RENV_DOWNLOAD_METHOD=libcurl \
+    RENV_CONFIG_REPOS_OVERRIDE=https://cloud.r-project.org \
+    DEBIAN_FRONTEND=noninteractive \
+    TZ=Asia/Kolkata
 
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-    ca-certificates \
-    curl \
-    build-essential \
-    pkg-config \
-    libssl-dev \
-    libcurl4-gnutls-dev \
-    libxml2-dev \
-    libpq-dev \
-    libv8-dev \
-    libsodium-dev \
-    libuv1-dev \
-    zlib1g-dev \
-    git && \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates curl git build-essential pkg-config \
+    libssl-dev libcurl4-gnutls-dev libxml2-dev libpq-dev \
+    libv8-dev libsodium-dev libuv1-dev zlib1g-dev \
+    cmake libgit2-dev && \
     rm -rf /var/lib/apt/lists/*
 
-RUN R -q -e "install.packages('renv', repos='https://cloud.r-project.org')"
+RUN mkdir -p /usr/local/Hrafnagud-Dynamo
+COPY . /usr/local/Hrafnagud-Dynamo
+COPY --from=gh /tmp/supabaseR /tmp/supabaseR
+COPY --from=gh /tmp/ical /tmp/ical
+COPY --from=gh /tmp/faucet /tmp/faucet
 
 WORKDIR /usr/local/Hrafnagud-Dynamo
-COPY . /usr/local/Hrafnagud-Dynamo
 
-RUN R -q -e "source('.Rprofile')"
-
-RUN R -q -e "renv::restore(prompt = FALSE)"
-
-RUN R -q -e "install.packages('remotes', repos='https://cloud.r-project.org')"
-
-RUN git clone https://github.com/DeepanshKhurana/supabaseR.git /tmp/supabaseR && \
-    git clone https://github.com/DeepanshKhurana/ical.git /tmp/ical
-
-RUN R -q -e "remotes::install_local('/tmp/supabaseR', upgrade = 'never'); remotes::install_local('/tmp/ical', upgrade = 'never')"
+RUN R -e "options(repos=Sys.getenv('RENV_CONFIG_REPOS_OVERRIDE')); install.packages(c('renv','remotes'))"
+RUN R -e "source('.Rprofile'); renv::restore(prompt = FALSE)"
+RUN R -e "remotes::install_local('/tmp/supabaseR', dependencies=TRUE, upgrade='never')"
+RUN R -e "remotes::install_local('/tmp/ical', dependencies=TRUE, upgrade='never')"
 
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-
 ENV PATH=/root/.cargo/bin:${PATH}
-
-RUN . $HOME/.cargo/env; rustc --version && cargo --version
-
-RUN git clone https://github.com/DeepanshKhurana/faucet.git /tmp/faucet && \
-    cd /tmp/faucet && git checkout feat/ssl-friendly-postgres && \
-    cargo install --path . && install -m 0755 /root/.cargo/bin/faucet /usr/local/bin/faucet
-
-
-
-FROM alpine/git:latest AS creds
-
-RUN apk add --no-cache openssh-client
-
-RUN mkdir -p /root/.ssh && \
-    ssh-keyscan -t rsa,ed25519 github.com >> /root/.ssh/known_hosts
-
-RUN --mount=type=ssh \
-    git clone git@github.com:DeepanshKhurana/Hrafnagud-Creds.git /tmp/Hrafnagud-Creds
-
-
-
-FROM build
-
-COPY --from=creds /tmp/Hrafnagud-Creds /tmp/Hrafnagud-Creds
-
-RUN mkdir -p /usr/local/Hrafnagud-Dynamo && \
-    cp /tmp/Hrafnagud-Creds/creds.txt /usr/local/Hrafnagud-Dynamo/.Renviron && \
-    cp /tmp/Hrafnagud-Creds/ebenezer_service_account.json /usr/local/Hrafnagud-Dynamo/.service_account && \
-    cp /tmp/Hrafnagud-Creds/supabase.crt /usr/local/Hrafnagud-Dynamo/supabase.crt && \
-    printf '\n' >> /usr/local/Hrafnagud-Dynamo/.Renviron && \
-    cat /tmp/Hrafnagud-Creds/api.txt >> /usr/local/Hrafnagud-Dynamo/.Renviron && \
-    rm -rf /tmp/Hrafnagud-Creds /tmp/supabaseR /tmp/ical /tmp/faucet
+RUN . $HOME/.cargo/env && cargo install --path /tmp/faucet --locked && \
+    install -m 0755 /root/.cargo/bin/faucet /usr/local/bin/faucet && \
+    rm -rf /tmp/supabaseR /tmp/ical /tmp/faucet
 
 EXPOSE 8008
-
 CMD ["faucet","--host","0.0.0.0:8008","start","--dir","."]
