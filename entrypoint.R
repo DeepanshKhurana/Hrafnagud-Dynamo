@@ -3,7 +3,8 @@ box::use(
     pr,
     pr_hook,
     pr_run,
-    pr_set_api_spec
+    pr_set_api_spec,
+    pr_set_debug
   ],
   here[
     here
@@ -53,4 +54,5 @@ pr("plumber.R") |> #nolint
       return(list())
     }
     plumber::forward()
-  })
+  }) |>
+  pr_set_debug(TRUE)

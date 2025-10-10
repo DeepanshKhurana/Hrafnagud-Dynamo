@@ -16,3 +16,6 @@ library(rvest)
 library(RPostgres)
 library(httr2)
 library(memoise)
+library(supabaseR)
+library(ical)
+
