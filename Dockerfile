@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
  && rm -rf /var/lib/apt/lists/*
 
 RUN curl -fsSL -o /tmp/faucet.tar.gz \
-      https://codeload.github.com/DeepanshKhurana/faucet/tar.gz/feat/ssl-friendly-postgres \
+      https://codeload.github.com/ixpantia/faucet/tar.gz/main \
  && tar -xzf /tmp/faucet.tar.gz -C /tmp \
  && curl -fsSL https://sh.rustup.rs | sh -s -- -y \
  && . "$HOME/.cargo/env" \

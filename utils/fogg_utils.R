@@ -3,12 +3,13 @@ box::use(
     arrange,
     bind_rows,
     coalesce,
+    filter,
     group_by,
     left_join,
     mutate,
     n,
     pull,
-    rename_with,
+    rename,
     select,
     summarise,
     ungroup
@@ -163,11 +164,8 @@ get_labelled_tasks_df <- function() {
     tasks |>
       map(process_task) |>
       bind_rows(.id = "id") |>
-      data.frame() |>
-      rename_with(
-        ~ "intensity",
-        starts_with("labels")
-      )
+      filter(assignee_id == "24939805" | is.na(assigner_id)) |>
+      rename(intensity = labels.NA)
   } else {
     data.frame()
   }
