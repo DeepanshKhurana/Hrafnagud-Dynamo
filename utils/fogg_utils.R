@@ -18,36 +18,31 @@ box::use(
     request,
     req_auth_bearer_token,
     req_perform,
-    resp_body_json
+    resp_body_json,
+    req_url_query
   ],
   glue[
     glue
   ],
   purrr[
-    map,
-    map2,
-    map_dbl,
-    map_df,
-    flatten
+    keep,
+    map
   ],
   tibble[
-    as_tibble
+    as_tibble,
+    tibble
   ],
 )
 
 #' Get Todoist projects
 #'
-#' Retrieves a list of projects from the Todoist API.
-#'
-#' @param todoist_token The API token for Todoist.
-#' @param url The base URL for the Todoist API.
-#' @return A list of Todoist projects.
+#' @param todoist_token Todoist API token
+#' @return A list of projects
 get_todoist_projects <- function(
-  todoist_token = Sys.getenv("TODOIST_API_TOKEN"),
-  url = "https://api.todoist.com/rest/v2"
+    todoist_token = Sys.getenv("TODOIST_API_TOKEN")
 ) {
   request(
-    base_url = glue("{url}/projects")
+    "https://api.todoist.com/rest/v2/projects"
   ) |>
     req_auth_bearer_token(
       todoist_token
@@ -56,166 +51,114 @@ get_todoist_projects <- function(
     resp_body_json()
 }
 
-#' Get Todoist tasks
+#' Get Todoist tasks by filter (paginated)
 #'
-#' Retrieves a list of tasks from the Todoist API.
-#'
-#' @param todoist_token The API token for Todoist.
-#' @param url The base URL for the Todoist API.
-#' @return A list of Todoist tasks.
-get_todoist_tasks <- function(
-  todoist_token = Sys.getenv("TODOIST_API_TOKEN"),
-  url = "https://api.todoist.com/api/v1"
+#' @param filter Todoist filter query
+#' @param todoist_token Todoist API token
+#' @return A list of tasks
+get_tasks_by_filter <- function(
+    filter,
+    todoist_token = Sys.getenv("TODOIST_API_TOKEN")
 ) {
-  request(
-    base_url = glue("{url}/tasks")
+  res <- request(
+    "https://api.todoist.com/api/v1/tasks/filter"
   ) |>
     req_auth_bearer_token(
       todoist_token
     ) |>
+    req_url_query(
+      query = filter
+    ) |>
     req_perform() |>
     resp_body_json()
+
+  res
 }
 
-#' Get tasks with labels
+#' Get labelled tasks due today
 #'
-#' Filters Todoist tasks to keep only those with labels.
-#'
-#' @return A list of tasks that have labels.
-get_labelled_tasks <- function(
-  all = FALSE
-) {
-  if (all) {
-    tasks <- Filter(
-      function(task) {
-        length(task$labels) > 0
-      },
-      get_todoist_tasks()
-    )
-  } else {
-    tasks <- Filter(
-      function(task) {
-        length(task$labels) > 0 && as.Date(task$due$date) == Sys.Date()
-      },
-      get_todoist_tasks()
-    )
-  }
+#' @return A list of tasks
+get_labelled_tasks <- function() {
+  get_tasks_by_filter(
+    filter = "@Intensity:* & today"
+  )$results
 }
 
-#' Flatten nested tasks
+#' Get labelled tasks as a tibble
 #'
-#' Recursively flattens tasks and replaces NULL with NA.
-#'
-#' @param nested_list A list to be flattened.
-#' @return A flattened list with unique names.
-flatten_task <- function(nested_list) {
-  if (is.list(nested_list)) {
-    if (length(nested_list) == 0) return(list(NA))
-    flattened <- unlist(
-      map(
-        nested_list,
-        flatten_task
-      ),
-      recursive = FALSE
-    )
-    names(flattened) <- make.names(
-      names(flattened),
-      unique = TRUE
-    )
-    flattened
-  } else {
-    nested_list
-  }
-}
-
-#' Process a task
-#'
-#' Converts NULL to NA and flattens nested lists.
-#'
-#' @param task A list representing a task.
-#' @return A processed and flattened list.
-process_task <- function(task) {
-  task <- map(
-    task,
-    ~
-      if (is.null(.)) {
-        NA
-      } else {
-        .
-      }
-  )
-  flattened_task <- flatten_task(task)
-  names(flattened_task) <- make.names(
-    names(flattened_task),
-    unique = TRUE
-  )
-  flattened_task
-}
-
-#' Get labelled tasks dataframe
-#'
-#' Retrieves tasks with labels and converts them to a tibble.
-#'
-#' @return A tibble of labelled tasks.
+#' @return A tibble of labelled tasks
 #' @export
 get_labelled_tasks_df <- function() {
   tasks <- get_labelled_tasks()
-  if (length(tasks) > 0) {
-    tasks |>
-      map(process_task) |>
-      bind_rows(.id = "id") |>
-      filter(assignee_id == "24939805" | is.na(assigner_id)) |>
-      rename(intensity = labels.NA)
-  } else {
-    data.frame()
+
+  tasks <- tasks |>
+    keep(
+      ~ is.list(.) && !is.null(.$id)
+    )
+
+  if (length(tasks) == 0) {
+    return(tibble())
   }
+
+  tasks |>
+    map(
+      ~ map(.x, normalize_field) |>
+        as_tibble()
+    ) |>
+    bind_rows() |>
+    filter(
+      responsible_uid == "24939805" | is.na(responsible_uid)
+    ) |>
+    mutate(
+      intensity = purrr::map_chr(
+        labels,
+        ~ unlist(.x)[grepl("^Intensity:", unlist(.x))]
+      )
+    )
 }
 
 #' Get task summary
 #'
-#' Summarizes tasks by labels
-#'
-#' @param tasks A data.frame of tasks fetched from get_labelled_tasks_df()
-#' @return A data.frame of summary count by intensity
+#' @param tasks Output of get_labelled_tasks_df()
+#' @return A data.frame summary
 get_tasks_summary <- function(
   tasks = get_labelled_tasks_df()
 ) {
-  if (nrow(tasks) > 0) {
-    tasks |>
-      group_by(intensity) |>
-      summarise(
-        count = n()
-      ) |>
-      ungroup() |>
-      arrange(intensity) |>
-      mutate(
-        intensity = gsub(
+  if (nrow(tasks) == 0) {
+    return(data.frame())
+  }
+
+  tasks |>
+    group_by(
+      intensity
+    ) |>
+    summarise(
+      count = n(),
+      .groups = "drop"
+    ) |>
+    arrange(
+      intensity
+    ) |>
+    mutate(
+      intensity = as.numeric(
+        gsub(
           "Intensity:",
           "",
-          .data$intensity
-        ) |>
-          as.numeric(),
-        count = count |>
-          as.numeric()
-      ) |>
-      data.frame()
-  } else {
+          intensity
+        )
+      ),
+      count = as.numeric(
+        count
+      )
+    ) |>
     data.frame()
-  }
 }
 
-#' Get task score
+#' Analyse task distribution
 #'
-#' Take the summary and calculate a score according to baseline
-#'
-#' @param task_summary A data.frame summary fetched from get_tasks_summary()
-#' @param ideal_tasks_distribution A named list of ideal distribution of tasks
-#' @return A list with the following components:
-#'   score: The difference between ideal and actual task score
-#'   recommendation: A string recommendation based on score:
-#'     - "Worse" if score > 0,
-#'     - "Better" if score < 0,
-#'     - "Ideal" if score == 0
+#' @param task_summary Summary from get_tasks_summary()
+#' @param ideal_tasks_distribution Named list of ideal counts
+#' @return Analysis result
 #' @export
 get_tasks_analysis <- function(
   task_summary = get_tasks_summary(),
@@ -227,78 +170,105 @@ get_tasks_analysis <- function(
     "5" = 2
   )
 ) {
-  if (nrow(task_summary) > 0) {
-    task_summary <- data.frame(
-      intensity = 1:5,
-      count = 0
-    ) |>
-      left_join(
-        task_summary,
-        by = "intensity"
-      ) |>
-      mutate(
-        count = coalesce(
-          count.y,
-          count.x
-        )
-      ) |>
-      select(
-        intensity,
-        count = count
-      )
-
-    total_tasks <- sum(task_summary$count)
-
-    score <- cbind(
-      task_summary,
-      data.frame(
-        ideal_count = unlist(ideal_tasks_distribution)
-      )
-    ) |>
-      mutate(
-        ideal_score = intensity * ideal_count * 0.1,
-        score = intensity * count * 0.1
-      ) |>
-      summarise(
-        score = sum(score - ideal_score)
-      ) |>
-      pull()
-
-    c(
-      list(
-        "summary" = task_summary,
-        "total_tasks" = total_tasks,
-        "mean_intensity" = (task_summary$intensity * task_summary$count) |>
-          sum() / total_tasks,
-        "score" = score
-      ),
-      get_recommendation(score)
-    )
-  } else {
-    list()
+  if (nrow(task_summary) == 0) {
+    return(list())
   }
+
+  task_summary <- data.frame(
+    intensity = 1:5,
+    count = 0
+  ) |>
+    left_join(
+      task_summary,
+      by = "intensity"
+    ) |>
+    mutate(
+      count = coalesce(
+        count.y,
+        count.x
+      )
+    ) |>
+    select(
+      intensity,
+      count
+    )
+
+  total_tasks <- sum(
+    task_summary$count
+  )
+
+  score <- cbind(
+    task_summary,
+    data.frame(
+      ideal_count = unlist(
+        ideal_tasks_distribution
+      )
+    )
+  ) |>
+    mutate(
+      score = intensity * count * 0.1,
+      ideal_score = intensity * ideal_count * 0.1
+    ) |>
+    summarise(
+      score = sum(
+        score - ideal_score
+      )
+    ) |>
+    pull()
+
+  c(
+    list(
+      summary = task_summary,
+      total_tasks = total_tasks,
+      mean_intensity =
+        sum(task_summary$intensity * task_summary$count) /
+        total_tasks,
+      score = score
+    ),
+    get_recommendation(
+      score
+    )
+  )
 }
 
-#' @param score the score calculated inside get_tasks_analysis()
-#' @param factor the factor to be used to calculate the recommendation
-#' @return A list with the following components:
-#' a numeric value of 1 to 5 representing the recommendation
-#' a string recommendation
+#' Get recommendation based on score
+#'
+#' @param score Numeric score
+#' @param factor Threshold
+#' @return Recommendation list
 get_recommendation <- function(
   score,
   factor = 2.5
 ) {
-  if (score <= -1 * factor) {
-    recommendation <- list(5, "Better")
-  } else if (score > -1 * factor && score < 0) {
-    recommendation <- list(4, "Good")
+  if (score <= -factor) {
+    out <- list(5, "Better")
+  } else if (score < 0) {
+    out <- list(4, "Good")
   } else if (score == 0) {
-    recommendation <- list(3, "Ideal")
-  } else if (score > 0 && score <= factor) {
-    recommendation <- list(2, "Bad")
-  } else if (score > factor) {
-    recommendation <- list(1, "Worse")
+    out <- list(3, "Ideal")
+  } else if (score <= factor) {
+    out <- list(2, "Bad")
+  } else {
+    out <- list(1, "Worse")
   }
-  names(recommendation) <- c("recommendation_number", "recommendation_verbose")
-  recommendation
+
+  names(out) <- c(
+    "recommendation_number",
+    "recommendation_verbose"
+  )
+
+  out
+}
+
+#' Normalize a field to ensure it is either a single value or a list
+#' @param x The input field to normalize
+#' @return The normalized field, either as a single value or a list
+normalize_field <- function(x) {
+  if (is.null(x)) {
+    NA
+  } else if (is.atomic(x) && length(x) == 1) {
+    x
+  } else {
+    list(x)
+  }
 }
