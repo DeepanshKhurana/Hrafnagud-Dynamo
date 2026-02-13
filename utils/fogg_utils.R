@@ -65,7 +65,7 @@ get_todoist_projects <- function(
 #' @return A list of Todoist tasks.
 get_todoist_tasks <- function(
   todoist_token = Sys.getenv("TODOIST_API_TOKEN"),
-  url = "https://api.todoist.com/rest/v2"
+  url = "https://api.todoist.com/api/v1"
 ) {
   request(
     base_url = glue("{url}/tasks")
