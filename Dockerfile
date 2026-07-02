@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 
-FROM rocker/r-ver:latest
+FROM rocker/r-ver:4.5.0
 
 ENV DEBIAN_FRONTEND=noninteractive TZ=Asia/Kolkata
 

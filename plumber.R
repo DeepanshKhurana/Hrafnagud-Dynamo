@@ -34,14 +34,16 @@ box::use(
     toJSON
   ],
   supabaseR[
-    delete_table_row,
-    get_cron_time,
-    get_table_data,
-    put_table_row,
-    get_table_schema,
-    get_table_query
+    sb_db_connect,
+    sb_db_delete,
+    sb_db_insert,
+    sb_db_query,
+    sb_db_read,
+    sb_db_schema
   ],
 )
+
+sb_db_connect()
 
 options(
   scipen = 999
@@ -60,7 +62,12 @@ assert_subset(
 if (database_utils == "supabase") {
   box::use(
     utils/supabase_utils[ # nolint
-      get_staleness
+      get_staleness,
+      get_cron_time,
+      get_next_id,
+      build_table_row,
+      create_table_row,
+      update_table_row
     ],
   )
 }
@@ -144,16 +151,13 @@ cache_helper <- function(
   if (substr(req_path, 1, 1) == "/") {
     req_path <- substr(req_path, 2, nchar(req_path))
   }
-  get_table_query(
-    cache_table,
-    schema = cache_schema,
-    columns = cache_columns,
-    filter_query = list(
-      glue(
-        "WHERE endpoint = '{req_path}'"
-      ),
-      "ORDER BY created_at DESC",
-      "LIMIT 1"
+  columns <- paste(unlist(cache_columns), collapse = ", ")
+  sb_db_query(
+    sql = glue(
+      "SELECT {columns} FROM {cache_schema}.{cache_table}
+       WHERE endpoint = '{req_path}'
+       ORDER BY created_at DESC
+       LIMIT 1"
     )
   ) |>
     as.character() |>
@@ -164,10 +168,11 @@ cache_new_row <- function(
   response,
   req
 ) {
-  put_table_row(
+  endpoint <- substr(req$PATH_INFO, 2, nchar(req$PATH_INFO))
+  row <- build_table_row(
     table_name = "hrafnagud_cache",
     input_list = list(
-      endpoint = substr(req$PATH_INFO, 2, nchar(req$PATH_INFO)),
+      endpoint = endpoint,
       response = response |>
         toJSON(
           auto_unbox = TRUE,
@@ -177,7 +182,11 @@ cache_new_row <- function(
         ),
       cron_time = glue("{get_cron_time()}:00")
     ),
-    is_update = FALSE
+    id = get_next_id("hrafnagud_cache")
+  )
+  sb_db_insert(
+    table = "hrafnagud_cache",
+    data = as.data.frame(row, stringsAsFactors = FALSE)
   )
 }
 
@@ -242,8 +251,8 @@ function(
   auth_helper(
     res,
     req,
-    get_table_schema,
-    table_name = table_name
+    sb_db_schema,
+    table = table_name
   )
 }
 
@@ -263,7 +272,7 @@ function(
   auth_helper(
     res,
     req,
-    put_table_row,
+    create_table_row,
     table_name = table_name,
     input_list = as.list(input_list)
   )
@@ -285,8 +294,8 @@ function(
   auth_helper(
     res,
     req,
-    get_table_data,
-    table_name = table_name,
+    sb_db_read,
+    table = table_name,
     limit = as.numeric(limit)
   )
 }
@@ -307,10 +316,9 @@ function(
   auth_helper(
     res,
     req,
-    put_table_row,
+    update_table_row,
     table_name = table_name,
-    input_list = as.list(input_list),
-    is_update = TRUE
+    input_list = as.list(input_list)
   )
 }
 
@@ -330,9 +338,9 @@ function(
   auth_helper(
     res,
     req,
-    delete_table_row,
-    table_name = table_name,
-    id_value = as.numeric(row_key)
+    sb_db_delete,
+    table = table_name,
+    where = list(id = as.numeric(row_key))
   )
 }
 
@@ -381,8 +389,8 @@ function(
     result <- auth_helper(
       res,
       req,
-      get_table_data,
-      table_name = "livingston_trips"
+      sb_db_read,
+      table = "livingston_trips"
     )
     cache_new_row(result, req)
     result
@@ -403,8 +411,8 @@ function(
   data <- auth_helper(
     res,
     req,
-    get_table_data,
-    table_name = "livingston_details"
+    sb_db_read,
+    table = "livingston_details"
   )
   data[
     as.numeric(data$trip_id) == as.numeric(trip_id),
@@ -430,8 +438,8 @@ function(
     result <- auth_helper(
       res,
       req,
-      get_table_data,
-      table_name = "livingston_trips"
+      sb_db_read,
+      table = "livingston_trips"
     )
 
     current <- Sys.Date()
@@ -475,8 +483,8 @@ function(
     result <- auth_helper(
       res,
       req,
-      get_table_data,
-      table_name = "livingston_trips"
+      sb_db_read,
+      table = "livingston_trips"
     )
 
     result <- result |>
@@ -639,8 +647,8 @@ function(
     result <- auth_helper(
       res,
       req,
-      get_table_data,
-      table_name = "ebenezer_loans"
+      sb_db_read,
+      table = "ebenezer_loans"
     ) |>
       mutate(
         leftover_amount = principal_amount - paid_amount
@@ -669,8 +677,8 @@ function(
     result <- auth_helper(
       res,
       req,
-      get_table_data,
-      table_name = "ebenezer_estate"
+      sb_db_read,
+      table = "ebenezer_estate"
     ) |>
       mutate(
         bought_value = area * bought_rate,
@@ -700,8 +708,8 @@ function(
     result <- auth_helper(
       res,
       req,
-      get_table_data,
-      table_name = "ebenezer_stocks"
+      sb_db_read,
+      table = "ebenezer_stocks"
     )
     cache_new_row(result, req)
     result
@@ -734,8 +742,8 @@ function(
     funds_data <- auth_helper(
       res,
       req,
-      get_table_data,
-      table_name = "ebenezer_funds"
+      sb_db_read,
+      table = "ebenezer_funds"
     )
 
     result <- calculate_funds(
@@ -767,8 +775,8 @@ function(
     result <- auth_helper(
       res,
       req,
-      get_table_data,
-      table_name = "ebenezer_deposits"
+      sb_db_read,
+      table = "ebenezer_deposits"
     )
     cache_new_row(result, req)
     result
@@ -794,8 +802,8 @@ function(
     result <- auth_helper(
       res,
       req,
-      get_table_data,
-      table_name = "ebenezer_savings"
+      sb_db_read,
+      table = "ebenezer_savings"
     )
     cache_new_row(result, req)
     result
@@ -821,8 +829,8 @@ function(
     result <- auth_helper(
       res,
       req,
-      get_table_data,
-      table_name = "ebenezer_mmtc"
+      sb_db_read,
+      table = "ebenezer_mmtc"
     )
     cache_new_row(result, req)
     result
@@ -848,8 +856,8 @@ function(
     result <- auth_helper(
       res,
       req,
-      get_table_data,
-      table_name = "ebenezer_sgbs"
+      sb_db_read,
+      table = "ebenezer_sgbs"
     )
     cache_new_row(result, req)
     result
@@ -882,8 +890,8 @@ function(
     stocks_data <- auth_helper(
       res,
       req,
-      get_table_data,
-      table_name = "ebenezer_stocks"
+      sb_db_read,
+      table = "ebenezer_stocks"
     )
 
     result <- calculate_portfolio(
@@ -922,8 +930,8 @@ function(
     stocks_data <- auth_helper(
       res,
       req,
-      get_table_data,
-      table_name = "ebenezer_stocks"
+      sb_db_read,
+      table = "ebenezer_stocks"
     )
 
     result <- summarise_portfolio(
@@ -962,8 +970,8 @@ function(
     funds_data <- auth_helper(
       res,
       req,
-      get_table_data,
-      table_name = "ebenezer_funds"
+      sb_db_read,
+      table = "ebenezer_funds"
     )
     result <- summarise_funds(
       funds_data,
@@ -994,8 +1002,8 @@ function(
     deposits_data <- auth_helper(
       res,
       req,
-      get_table_data,
-      table_name = "ebenezer_deposits"
+      sb_db_read,
+      table = "ebenezer_deposits"
     )
     result <- summarise_deposits(deposits_data)
     cache_new_row(result, req)
@@ -1022,8 +1030,8 @@ function(
     savings_data <- auth_helper(
       res,
       req,
-      get_table_data,
-      table_name = "ebenezer_savings"
+      sb_db_read,
+      table = "ebenezer_savings"
     )
     result <- summarise_savings(savings_data)
     cache_new_row(result, req)
@@ -1050,8 +1058,8 @@ function(
     mmtc_data <- auth_helper(
       res,
       req,
-      get_table_data,
-      table_name = "ebenezer_mmtc"
+      sb_db_read,
+      table = "ebenezer_mmtc"
     )
     result <- summarise_mmtc(
       mmtc_data,
@@ -1081,8 +1089,8 @@ function(
     sgbs_data <- auth_helper(
       res,
       req,
-      get_table_data,
-      table_name = "ebenezer_sgbs"
+      sb_db_read,
+      table = "ebenezer_sgbs"
     )
     result <- summarise_sgbs(
       sgbs_data,
@@ -1112,29 +1120,29 @@ function(
     sgbs_data <- auth_helper(
       res,
       req,
-      get_table_data,
-      table_name = "ebenezer_sgbs"
+      sb_db_read,
+      table = "ebenezer_sgbs"
     )
 
     mmtc_data <- auth_helper(
       res,
       req,
-      get_table_data,
-      table_name = "ebenezer_mmtc"
+      sb_db_read,
+      table = "ebenezer_mmtc"
     )
 
     savings_data <- auth_helper(
       res,
       req,
-      get_table_data,
-      table_name = "ebenezer_savings"
+      sb_db_read,
+      table = "ebenezer_savings"
     )
 
     deposits_data <- auth_helper(
       res,
       req,
-      get_table_data,
-      table_name = "ebenezer_deposits"
+      sb_db_read,
+      table = "ebenezer_deposits"
     )
 
     funds_ticker_data <- auth_helper(
@@ -1147,8 +1155,8 @@ function(
     mutual_funds_data <- auth_helper(
       res,
       req,
-      get_table_data,
-      table_name = "ebenezer_funds"
+      sb_db_read,
+      table = "ebenezer_funds"
     )
 
     stocks_ticker_data <- auth_helper(
@@ -1161,8 +1169,8 @@ function(
     stocks_data <- auth_helper(
       res,
       req,
-      get_table_data,
-      table_name = "ebenezer_stocks"
+      sb_db_read,
+      table = "ebenezer_stocks"
     )
 
     etfs_data <- stocks_data[
@@ -1184,8 +1192,8 @@ function(
     estate_data <- auth_helper(
       res,
       req,
-      get_table_data,
-      table_name = "ebenezer_estate"
+      sb_db_read,
+      table = "ebenezer_estate"
     ) |>
       mutate(
         bought_value = area * bought_rate,
@@ -1195,8 +1203,8 @@ function(
     loan_data <- auth_helper(
       res,
       req,
-      get_table_data,
-      table_name = "ebenezer_loans"
+      sb_db_read,
+      table = "ebenezer_loans"
     ) |>
       mutate(
         leftover_amount = principal_amount - paid_amount
@@ -1326,8 +1334,8 @@ function(
     result <- auth_helper(
       res,
       req,
-      get_table_data,
-      table_name = "chronos_cache"
+      sb_db_read,
+      table = "chronos_cache"
     )
     cache_new_row(result, req)
     result
