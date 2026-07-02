@@ -1,7 +1,4 @@
 box::use(
-  dplyr[
-    select
-  ],
   httr2[
     request,
     req_auth_bearer_token,
@@ -28,7 +25,7 @@ box::use(
 #' @export
 get_flight_data <- function(
   flight_iata = NULL,
-  flight_date = as.Date(Sys.Date()),
+  flight_date = Sys.Date(),
   access_key = Sys.getenv("AVIATIONSTACK_API_KEY"),
   url = "https://api.aviationstack.com"
 ) {

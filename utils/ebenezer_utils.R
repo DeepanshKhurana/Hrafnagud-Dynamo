@@ -81,7 +81,6 @@ calculate_avg_day_price <- function(
     mutate(transaction_date = as.Date(transaction_date)) |>
     select(stock_symbol, transaction_date, quantity, transaction_price) |>
     mutate(
-      quantity = quantity,
       cost = transaction_price * quantity
     ) |>
     group_by(stock_symbol, transaction_date) |>
@@ -272,14 +271,11 @@ process_ticker_data <- function(
     name,
     change_percent
   ) |>
-    mutate_at(
-      vars(
-        c(
-          "current_price",
-          "change_percent"
-        )
-      ),
-      as.numeric
+    mutate(
+      across(
+        c(current_price, change_percent),
+        as.numeric
+      )
     )
 }
 
@@ -304,17 +300,17 @@ process_stocks_data <- function(
         order(names(stocks_data))
       ]
     ) |>
-    mutate_at(
-      vars(
+    mutate(
+      across(
         c(
-          "brokerage",
-          "quantity",
-          "stamp_duty",
-          "transaction_charges",
-          "transaction_price"
-        )
-      ),
-      as.numeric
+          brokerage,
+          quantity,
+          stamp_duty,
+          transaction_charges,
+          transaction_price
+        ),
+        as.numeric
+      )
     )
 }
 
@@ -494,12 +490,7 @@ process_deposits <- function(
   ) / (as.numeric(deposits_data$tenure_years) * 365.25)
 
   # Fix for negative values when the dates are the same - deposit creation
-
-  deposits_data$progress <- ifelse(
-    deposits_data$progress < 0,
-    0.00,
-    deposits_data$progress
-  )
+  deposits_data$progress <- pmax(deposits_data$progress, 0)
 
   deposits_data
 }
@@ -622,14 +613,7 @@ summarise_sgbs <- function(
       )
     ),
     "current" = sum(
-      as.numeric(
-        as.numeric(
-          sgbs_data$quantity
-        ) *
-          as.numeric(
-            bullions_price
-          )
-      )
+      as.numeric(sgbs_data$quantity) * as.numeric(bullions_price)
     )
   )
 }

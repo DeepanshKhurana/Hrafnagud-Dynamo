@@ -26,30 +26,14 @@ box::use(
   ],
   purrr[
     keep,
-    map
+    map,
+    map_chr
   ],
   tibble[
     as_tibble,
     tibble
   ],
 )
-
-#' Get Todoist projects
-#'
-#' @param todoist_token Todoist API token
-#' @return A list of projects
-get_todoist_projects <- function(
-    todoist_token = Sys.getenv("TODOIST_API_TOKEN")
-) {
-  request(
-    "https://api.todoist.com/rest/v2/projects"
-  ) |>
-    req_auth_bearer_token(
-      todoist_token
-    ) |>
-    req_perform() |>
-    resp_body_json()
-}
 
 #' Get Todoist tasks by filter (paginated)
 #'
@@ -60,7 +44,7 @@ get_tasks_by_filter <- function(
     filter,
     todoist_token = Sys.getenv("TODOIST_API_TOKEN")
 ) {
-  res <- request(
+  request(
     "https://api.todoist.com/api/v1/tasks/filter"
   ) |>
     req_auth_bearer_token(
@@ -71,8 +55,6 @@ get_tasks_by_filter <- function(
     ) |>
     req_perform() |>
     resp_body_json()
-
-  res
 }
 
 #' Get labelled tasks due today
@@ -110,7 +92,7 @@ get_labelled_tasks_df <- function() {
       responsible_uid == "24939805" | is.na(responsible_uid)
     ) |>
     mutate(
-      intensity = purrr::map_chr(
+      intensity = map_chr(
         labels,
         ~ unlist(.x)[grepl("^Intensity:", unlist(.x))]
       )
@@ -241,23 +223,16 @@ get_recommendation <- function(
   factor = 2.5
 ) {
   if (score <= -factor) {
-    out <- list(5, "Better")
+    list(recommendation_number = 5, recommendation_verbose = "Better")
   } else if (score < 0) {
-    out <- list(4, "Good")
+    list(recommendation_number = 4, recommendation_verbose = "Good")
   } else if (score == 0) {
-    out <- list(3, "Ideal")
+    list(recommendation_number = 3, recommendation_verbose = "Ideal")
   } else if (score <= factor) {
-    out <- list(2, "Bad")
+    list(recommendation_number = 2, recommendation_verbose = "Bad")
   } else {
-    out <- list(1, "Worse")
+    list(recommendation_number = 1, recommendation_verbose = "Worse")
   }
-
-  names(out) <- c(
-    "recommendation_number",
-    "recommendation_verbose"
-  )
-
-  out
 }
 
 #' Normalize a field to ensure it is either a single value or a list

@@ -44,7 +44,7 @@ calculate_staleness <- function(
     cron_difference = difference,
     cron_status = if (difference < 60) {
       "green"
-    } else if (difference < 300 && difference > 60) {
+    } else if (difference < 300) {
       "yellow"
     } else {
       "red"

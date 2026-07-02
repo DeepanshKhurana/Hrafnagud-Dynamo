@@ -15,9 +15,7 @@ box::use(
     summarise
   ],
   lubridate[
-    ymd,
-    month,
-    year
+    ymd
   ],
   tidyr[
     complete
@@ -484,7 +482,7 @@ function(
     result <- result |>
       mutate(start_date = as.Date(start_date)) |>
       filter(start_date >= Sys.Date()) |>
-      arrange(start_date) %>%
+      arrange(start_date) |>
       slice(1)
 
     if (nrow(result) == 0) {

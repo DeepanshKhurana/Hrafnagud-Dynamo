@@ -6,3 +6,4 @@
 .DS_Store
 .service_account
 calendars/*
+.Renviron
