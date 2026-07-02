@@ -1400,7 +1400,7 @@ function(
 
 ### Word of the Day ----
 
-#* Word of the Day (not cached)
+#* Word of the Day
 #* @get /webster/today
 #* @param cached:bool Whether to use cached data or not
 #* @tag Webster
