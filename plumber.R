@@ -1342,6 +1342,35 @@ function(
   }
 }
 
+### Events ----
+
+#* Calendars
+#* @get /chronos/calendars
+#* @param cached:bool Whether to use cached data or not
+#* @tag Chronos
+function(
+  res,
+  req,
+  cached = FALSE
+) {
+  if (as.logical(cached)) {
+    cache_helper(
+      req_path = req$PATH_INFO
+    )
+  } else {
+    result <- auth_helper(
+      res,
+      req,
+      sb_db_read,
+      table = "chronos_calendars"
+    )
+    result <- result |>
+      select(-url)
+    cache_new_row(result, req)
+    result
+  }
+}
+
 ## Fogg ----
 
 ### Today's Tasks ----
