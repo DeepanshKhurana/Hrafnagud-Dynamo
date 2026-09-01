@@ -382,7 +382,10 @@ function(
   cached = FALSE
 ) {
   if (as.logical(cached)) {
-    cache_helper(
+    auth_helper(
+      res,
+      req,
+      cache_helper,
       req_path = req$PATH_INFO
     )
   } else {
@@ -431,7 +434,10 @@ function(
   cached = FALSE
 ) {
   if (as.logical(cached)) {
-    cache_helper(
+    auth_helper(
+      res,
+      req,
+      cache_helper,
       req_path = req$PATH_INFO
     )
   } else {
@@ -476,7 +482,10 @@ function(
   cached = FALSE
 ) {
   if (as.logical(cached)) {
-    cache_helper(
+    auth_helper(
+      res,
+      req,
+      cache_helper,
       req_path = req$PATH_INFO
     )
   } else {
@@ -530,7 +539,10 @@ function(
   cached = FALSE
 ) {
   if (as.logical(cached)) {
-    cache_helper(
+    auth_helper(
+      res,
+      req,
+      cache_helper,
       req_path = req$PATH_INFO
     )
   } else {
@@ -557,7 +569,10 @@ function(
   cached = FALSE
 ) {
   if (as.logical(cached)) {
-    cache_helper(
+    auth_helper(
+      res,
+      req,
+      cache_helper,
       req_path = req$PATH_INFO
     )
   } else {
@@ -586,7 +601,10 @@ function(
   cached = FALSE
 ) {
   if (as.logical(cached)) {
-    cache_helper(
+    auth_helper(
+      res,
+      req,
+      cache_helper,
       req_path = req$PATH_INFO
     )
   } else {
@@ -612,7 +630,10 @@ function(
   cached = FALSE
 ) {
   if (as.logical(cached)) {
-    cache_helper(
+    auth_helper(
+      res,
+      req,
+      cache_helper,
       req_path = req$PATH_INFO
     )
   } else {
@@ -640,7 +661,10 @@ function(
   cached = FALSE
 ) {
   if (as.logical(cached)) {
-    cache_helper(
+    auth_helper(
+      res,
+      req,
+      cache_helper,
       req_path = req$PATH_INFO
     )
   } else {
@@ -670,7 +694,10 @@ function(
   cached = FALSE
 ) {
   if (as.logical(cached)) {
-    cache_helper(
+    auth_helper(
+      res,
+      req,
+      cache_helper,
       req_path = req$PATH_INFO
     )
   } else {
@@ -701,7 +728,10 @@ function(
   cached = FALSE
 ) {
   if (as.logical(cached)) {
-    cache_helper(
+    auth_helper(
+      res,
+      req,
+      cache_helper,
       req_path = req$PATH_INFO
     )
   } else {
@@ -728,7 +758,10 @@ function(
   cached = FALSE
 ) {
   if (as.logical(cached)) {
-    cache_helper(
+    auth_helper(
+      res,
+      req,
+      cache_helper,
       req_path = req$PATH_INFO
     )
   } else {
@@ -768,7 +801,10 @@ function(
   cached = FALSE
 ) {
   if (as.logical(cached)) {
-    cache_helper(
+    auth_helper(
+      res,
+      req,
+      cache_helper,
       req_path = req$PATH_INFO
     )
   } else {
@@ -795,7 +831,10 @@ function(
   cached = FALSE
 ) {
   if (as.logical(cached)) {
-    cache_helper(
+    auth_helper(
+      res,
+      req,
+      cache_helper,
       req_path = req$PATH_INFO
     )
   } else {
@@ -822,7 +861,10 @@ function(
   cached = FALSE
 ) {
   if (as.logical(cached)) {
-    cache_helper(
+    auth_helper(
+      res,
+      req,
+      cache_helper,
       req_path = req$PATH_INFO
     )
   } else {
@@ -849,7 +891,10 @@ function(
   cached = FALSE
 ) {
   if (as.logical(cached)) {
-    cache_helper(
+    auth_helper(
+      res,
+      req,
+      cache_helper,
       req_path = req$PATH_INFO
     )
   } else {
@@ -876,7 +921,10 @@ function(
   cached = FALSE
 ) {
   if (as.logical(cached)) {
-    cache_helper(
+    auth_helper(
+      res,
+      req,
+      cache_helper,
       req_path = req$PATH_INFO
     )
   } else {
@@ -916,7 +964,10 @@ function(
   cached = FALSE
 ) {
   if (as.logical(cached)) {
-    cache_helper(
+    auth_helper(
+      res,
+      req,
+      cache_helper,
       req_path = req$PATH_INFO
     )
   } else {
@@ -957,7 +1008,10 @@ function(
   cached = FALSE
 ) {
   if (as.logical(cached)) {
-    cache_helper(
+    auth_helper(
+      res,
+      req,
+      cache_helper,
       req_path = req$PATH_INFO
     )
   } else {
@@ -995,7 +1049,10 @@ function(
   cached = FALSE
 ) {
   if (as.logical(cached)) {
-    cache_helper(
+    auth_helper(
+      res,
+      req,
+      cache_helper,
       req_path = req$PATH_INFO
     )
   } else {
@@ -1023,7 +1080,10 @@ function(
   cached = FALSE
 ) {
   if (as.logical(cached)) {
-    cache_helper(
+    auth_helper(
+      res,
+      req,
+      cache_helper,
       req_path = req$PATH_INFO
     )
   } else {
@@ -1051,7 +1111,10 @@ function(
   cached = FALSE
 ) {
   if (as.logical(cached)) {
-    cache_helper(
+    auth_helper(
+      res,
+      req,
+      cache_helper,
       req_path = req$PATH_INFO
     )
   } else {
@@ -1082,7 +1145,10 @@ function(
   cached = FALSE
 ) {
   if (as.logical(cached)) {
-    cache_helper(
+    auth_helper(
+      res,
+      req,
+      cache_helper,
       req_path = req$PATH_INFO
     )
   } else {
@@ -1113,7 +1179,10 @@ function(
   cached = FALSE
 ) {
   if (as.logical(cached)) {
-    cache_helper(
+    auth_helper(
+      res,
+      req,
+      cache_helper,
       req_path = req$PATH_INFO
     )
   } else {
@@ -1327,7 +1396,10 @@ function(
   cached = FALSE
 ) {
   if (as.logical(cached)) {
-    cache_helper(
+    auth_helper(
+      res,
+      req,
+      cache_helper,
       req_path = req$PATH_INFO
     )
   } else {
@@ -1354,7 +1426,10 @@ function(
   cached = FALSE
 ) {
   if (as.logical(cached)) {
-    cache_helper(
+    auth_helper(
+      res,
+      req,
+      cache_helper,
       req_path = req$PATH_INFO
     )
   } else {
@@ -1385,7 +1460,10 @@ function(
   cached = FALSE
 ) {
   if (as.logical(cached)) {
-    cache_helper(
+    auth_helper(
+      res,
+      req,
+      cache_helper,
       req_path = req$PATH_INFO
     )
   } else {
@@ -1411,7 +1489,10 @@ function(
   cached = FALSE
 ) {
   if (as.logical(cached)) {
-    cache_helper(
+    auth_helper(
+      res,
+      req,
+      cache_helper,
       req_path = req$PATH_INFO
     )
   } else {
@@ -1439,7 +1520,10 @@ function(
   cached = FALSE
 ) {
   if (as.logical(cached)) {
-    cache_helper(
+    auth_helper(
+      res,
+      req,
+      cache_helper,
       req_path = req$PATH_INFO
     )
   } else {
