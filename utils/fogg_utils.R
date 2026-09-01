@@ -66,6 +66,100 @@ get_labelled_tasks <- function() {
   )$results
 }
 
+#' Get every Todoist project, paginated via the API's cursor
+#'
+#' @param todoist_token Todoist API token
+#' @return A list of project objects
+get_projects <- function(
+    todoist_token = Sys.getenv("TODOIST_API_TOKEN")
+) {
+  projects <- list()
+  cursor <- NULL
+
+  repeat {
+    req <- request(
+      "https://api.todoist.com/api/v1/projects"
+    ) |>
+      req_auth_bearer_token(
+        todoist_token
+      )
+
+    if (!is.null(cursor)) {
+      req <- req |> req_url_query(cursor = cursor)
+    }
+
+    body <- req |> req_perform() |> resp_body_json()
+    projects <- c(projects, body$results)
+    cursor <- body$next_cursor
+
+    if (is.null(cursor)) break
+  }
+
+  projects
+}
+
+#' Resolve Todoist Project names
+#'
+#' @return A named character vector, keyed by project id
+get_project_names <- function() {
+  projects <- get_projects()
+
+  if (length(projects) == 0) {
+    return(character())
+  }
+
+  names_by_id <- map_chr(projects, "name")
+  names(names_by_id) <- map_chr(projects, "id")
+  names_by_id
+}
+
+#' Get every Todoist section, paginated via the API's cursor
+#'
+#' @param todoist_token Todoist API token
+#' @return A list of section objects
+get_sections <- function(
+    todoist_token = Sys.getenv("TODOIST_API_TOKEN")
+) {
+  sections <- list()
+  cursor <- NULL
+
+  repeat {
+    req <- request(
+      "https://api.todoist.com/api/v1/sections"
+    ) |>
+      req_auth_bearer_token(
+        todoist_token
+      )
+
+    if (!is.null(cursor)) {
+      req <- req |> req_url_query(cursor = cursor)
+    }
+
+    body <- req |> req_perform() |> resp_body_json()
+    sections <- c(sections, body$results)
+    cursor <- body$next_cursor
+
+    if (is.null(cursor)) break
+  }
+
+  sections
+}
+
+#' Resolve Todoist section names
+#'
+#' @return A named character vector, keyed by section id
+get_section_names <- function() {
+  sections <- get_sections()
+
+  if (length(sections) == 0) {
+    return(character())
+  }
+
+  names_by_id <- map_chr(sections, "name")
+  names(names_by_id) <- map_chr(sections, "id")
+  names_by_id
+}
+
 #' Get labelled tasks as a tibble
 #'
 #' @return A tibble of labelled tasks
@@ -82,6 +176,9 @@ get_labelled_tasks_df <- function() {
     return(tibble())
   }
 
+  project_names <- get_project_names()
+  section_names <- get_section_names()
+
   tasks |>
     map(
       ~ map(.x, normalize_field) |>
@@ -95,6 +192,14 @@ get_labelled_tasks_df <- function() {
       intensity = map_chr(
         labels,
         ~ unlist(.x)[grepl("^Intensity:", unlist(.x))]
+      ),
+      project_name = coalesce(
+        unname(project_names[project_id]),
+        "Unknown"
+      ),
+      section_name = coalesce(
+        unname(section_names[section_id]),
+        "No Section"
       )
     )
 }
