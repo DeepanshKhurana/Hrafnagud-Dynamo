@@ -102,6 +102,9 @@ box::use(
   utils/webster_utils[ #nolint
     get_word_of_the_day
   ],
+  utils/aang_utils[ #nolint
+    get_air_quality
+  ],
 )
 
 # Helper ----
@@ -204,6 +207,7 @@ cache_new_row <- function(
 #* @apiTag Fogg Todoist Task-related Endpoints
 #* @apiTag Chronos Google Calendar-related Endpoints
 #* @apiTag Webster Merriam-Webster Crawler Endpoints
+#* @apiTag Aang Air Quality Endpoints
 
 ## Health ----
 
@@ -1534,5 +1538,49 @@ function(
     )
     cache_new_row(result, req)
     result
+  }
+}
+
+## Aang ----
+
+### Air Quality ----
+
+#* Air Quality
+#*
+#* CPCB's nearest reporting station inside India, Open-Meteo everywhere else.
+#* Coordinates are required: the API runs nowhere near the reader.
+#*
+#* @get /aang/aqi
+#* @param lat:numeric Latitude of the place to read, -90 to 90
+#* @param lon:numeric Longitude of the place to read, -180 to 180
+#* @serializer unboxedJSON
+#* @tag Aang
+function(
+  res,
+  req,
+  lat,
+  lon
+) {
+  coords <- suppressWarnings(
+    c(
+      as.numeric(lat),
+      as.numeric(lon)
+    )
+  )
+  invalid <- any(is.na(coords)) ||
+    abs(coords[1]) > 90 ||
+    abs(coords[2]) > 180
+
+  if (invalid) {
+    res$status <- 400
+    list(error = "lat and lon must be valid coordinates")
+  } else {
+    auth_helper(
+      res,
+      req,
+      get_air_quality,
+      lat = coords[1],
+      lon = coords[2]
+    )
   }
 }
